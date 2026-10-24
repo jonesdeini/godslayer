@@ -14,6 +14,8 @@ This is Rob's project to learn and to be able to defend in an interview. The poi
 - Work in small increments. Do one piece, stop, check in. Don't chain multiple files or services together without pausing for input.
 - This file and any other planning doc are rough sketches of the idea, not specs. Nothing is "settled" just because it's written down — if it matters, re-derive it in conversation and record the real decision here.
 - Default to the simplest thing that works for the current scale. Don't add CI path filters, codegen, abstractions, etc. until there's an actual pain point driving it.
+- Default to Rails' own omakase convention (whatever `rails new` gives you with no extra gem) over a popular-but-bolted-on alternative. A deviation is fine, but it needs a stated reason at the time it's made, not just "that's what reef-1000 does" or "this gem is common."
+- Prefer commit messages over code comments for explaining *why* something is the way it is. Keep inline comments terse (match Rails' own default comment density, not longer); put the reasoning, tradeoffs, and what was tried in the commit message instead. Every commit message should say why the change is being made, not just what changed.
 
 ## Decided so far
 

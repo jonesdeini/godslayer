@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
+# This Dockerfile is designed for production, not development. Build'n'run by hand:
 # docker build -t godslayer .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name godslayer godslayer
+# docker run -d -p 80:80 -e SECRET_KEY_BASE=<a random value, e.g. `bin/rails secret`> --name godslayer godslayer
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
@@ -51,15 +51,10 @@ COPY . .
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-# or the real eBay credentials - config/application.rb fails loudly on a
-# missing EBAY_CLIENT_ID/SECRET at boot (on purpose, same as RAILS_MASTER_KEY),
-# and asset precompile boots the full Rails environment. Dummy build-time
-# values only, never baked into the final runtime stage below.
-RUN SECRET_KEY_BASE_DUMMY=1 \
-    EBAY_CLIENT_ID=build_time_dummy \
-    EBAY_CLIENT_SECRET=build_time_dummy \
-    ./bin/rails assets:precompile
+# Precompiling assets without requiring real secrets - source .env.example
+# for placeholder required env vars, plus SECRET_KEY_BASE_DUMMY=1.
+RUN set -a && . ./.env.example && set +a && \
+    SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 
 
