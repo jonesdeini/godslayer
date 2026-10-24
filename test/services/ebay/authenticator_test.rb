@@ -1,11 +1,6 @@
 require "test_helper"
 
 class Ebay::AuthenticatorTest < ActiveSupport::TestCase
-  setup do
-    Ebay::Authenticator.instance_variable_set(:@token, nil)
-    Ebay::Authenticator.instance_variable_set(:@expires_at, nil)
-  end
-
   test "reuses a cached token instead of fetching a new one every call" do
     stub = stub_request(:post, "https://api.ebay.com/identity/v1/oauth2/token")
       .to_return(status: 200, body: { access_token: "fake-token", expires_in: 7200 }.to_json)

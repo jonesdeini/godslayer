@@ -8,6 +8,14 @@ module Ebay
       @token ||= fetch_token
     end
 
+    # Clears the cached token. The token is memoized at the class level (it
+    # must survive across many calls, unlike Apex's per-instance cookie
+    # re-auth), so tests need an explicit way to reset it between examples.
+    def self.reset!
+      @token = nil
+      @expires_at = nil
+    end
+
     def self.fetch_token
       response = HTTP.basic_auth(
         user: Rails.application.config.x.ebay.client_id,

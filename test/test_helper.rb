@@ -12,5 +12,10 @@ module ActiveSupport
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
+
+    # Ebay::Authenticator caches its token at the class level, so it has to
+    # be reset before every test regardless of run order - otherwise a
+    # token cached by one test leaks into another's assertions.
+    setup { Ebay::Authenticator.reset! }
   end
 end
