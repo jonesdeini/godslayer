@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: godslayer
+      POSTGRES_DB: godslayer_production
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-queue-db.sh:/docker-entrypoint-initdb.d/init-queue-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U godslayer -d godslayer_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    image: ghcr.io/jonesdeini/godslayer:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment: &app_env
+      PGHOST: postgres
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      EBAY_CLIENT_ID: ${EBAY_CLIENT_ID}
+      EBAY_CLIENT_SECRET: ${EBAY_CLIENT_SECRET}
+      EBAY_MARKETPLACE_ID: ${EBAY_MARKETPLACE_ID}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  jobs:
+    image: ghcr.io/jonesdeini/godslayer:latest
+    restart: unless-stopped
+    command: bin/jobs
+    depends_on:
+      web:
+        condition: service_healthy
+    environment: *app_env
+
+  # Poll-based deploy: no inbound access to this box needed, GitHub never
+  # executes anything here, it just gets pulled from. See reef-1000's
+  # CLAUDE.md ("Deploying") for the full reasoning this mirrors.
+  updater:
+    image: docker:cli
+    restart: unless-stopped
+    environment:
+      COMPOSE_PROJECT_NAME: godslayer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # TODO: confirm this matches the actual Unraid share path once the
+      # repo is checked out there (see Shadesmar/reef-1000's "reefff"
+      # share-naming convention - this is a guess, not confirmed).
+      - /mnt/user/godslayerrr/godslayer:/mnt/user/godslayerrr/godslayer
+    working_dir: /mnt/user/godslayerrr/godslayer
+    entrypoint: sh
+    command: -c 'while true; do docker compose pull --quiet web jobs postgres && docker compose up -d web jobs postgres && docker image prune -f; sleep 300; done'

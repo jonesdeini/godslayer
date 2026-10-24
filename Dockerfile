@@ -52,7 +52,14 @@ COPY . .
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# or the real eBay credentials - config/application.rb fails loudly on a
+# missing EBAY_CLIENT_ID/SECRET at boot (on purpose, same as RAILS_MASTER_KEY),
+# and asset precompile boots the full Rails environment. Dummy build-time
+# values only, never baked into the final runtime stage below.
+RUN SECRET_KEY_BASE_DUMMY=1 \
+    EBAY_CLIENT_ID=build_time_dummy \
+    EBAY_CLIENT_SECRET=build_time_dummy \
+    ./bin/rails assets:precompile
 
 
 

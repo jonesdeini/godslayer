@@ -26,3 +26,6 @@
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
+
+# docker-compose's local postgres data volume (bind-mounted, not a real backup).
+/postgres_data

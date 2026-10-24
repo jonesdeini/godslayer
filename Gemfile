@@ -26,16 +26,14 @@ gem "jbuilder"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
-gem "solid_cache"
+# Database-backed Active Job adapter, for the scrape job's recurring schedule.
+# solid_cache/solid_cable are the Rails 8 default too, but unused so far (no
+# cache store need, no ActionCable feature) - dropped to avoid provisioning
+# two more logical databases for nothing. Add back if that changes.
 gem "solid_queue"
-gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
-
-# Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
-gem "kamal", require: false
 
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
