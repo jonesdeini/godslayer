@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ebay
   class Authenticator
     TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token".freeze

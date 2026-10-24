@@ -13,3 +13,8 @@ Style/MethodCallWithArgsParentheses:
   Enabled: true
   EnforcedStyle: omit_parentheses
   AllowParenthesesInMultilineCall: true
+
+# Override omakase's default (disabled) - see commit message for why.
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
