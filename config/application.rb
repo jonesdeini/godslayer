@@ -26,7 +26,7 @@ module Godslayer
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib ignore: %w[assets tasks]
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -36,9 +36,9 @@ module Godslayer
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
-    config.x.ebay.client_id = ENV.fetch("EBAY_CLIENT_ID")
-    config.x.ebay.client_secret = ENV.fetch("EBAY_CLIENT_SECRET")
-    config.x.ebay.marketplace_id = ENV.fetch("EBAY_MARKETPLACE_ID", "EBAY_US")
+    config.x.ebay.client_id = ENV.fetch "EBAY_CLIENT_ID"
+    config.x.ebay.client_secret = ENV.fetch "EBAY_CLIENT_SECRET"
+    config.x.ebay.marketplace_id = ENV.fetch "EBAY_MARKETPLACE_ID", "EBAY_US"
 
     # Don't generate system test files.
     config.generators.system_tests = nil

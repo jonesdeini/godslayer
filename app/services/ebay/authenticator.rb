@@ -22,9 +22,9 @@ module Ebay
         pass: Rails.application.config.x.ebay.client_secret
       ).post(TOKEN_URL, form: { grant_type: "client_credentials", scope: SCOPE })
 
-      body = JSON.parse(response.body.to_s)
+      body = JSON.parse response.body.to_s
       @expires_at = Time.now + body.fetch("expires_in").to_i
-      body.fetch("access_token")
+      body.fetch "access_token"
     end
     private_class_method :fetch_token
   end

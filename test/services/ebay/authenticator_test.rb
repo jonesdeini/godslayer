@@ -8,7 +8,7 @@ class Ebay::AuthenticatorTest < ActiveSupport::TestCase
     Ebay::Authenticator.token
     Ebay::Authenticator.token
 
-    assert_requested(stub, times: 1)
+    assert_requested stub, times: 1
   end
 
   test "fetches a new token once the cached one has expired" do

@@ -3,7 +3,7 @@ require "test_helper"
 class Ebay::BaseTest < ActiveSupport::TestCase
   class FakeEndpoint < Ebay::Base
     def ping
-      get("#{base_url}/ping")
+      get "#{base_url}/ping"
     end
   end
 
