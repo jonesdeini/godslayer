@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  phrase: R730xd
+  active: true
+
+two:
+  phrase: Pro Liant
+  active: true

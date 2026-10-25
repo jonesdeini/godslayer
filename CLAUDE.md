@@ -37,18 +37,17 @@ This is Rob's project to learn and to be able to defend in an interview. The poi
 **Deploy:** same shape as reef-1000 — `docker-compose.yml` (postgres + web + jobs + a poll-based `updater`) and a `build_and_push` CI job to GHCR, gated on `lint`/`test`/`scan_ruby` passing. This is going on the same home Unraid box as reef-1000 (Urithiru), so the same reasoning applies: Kamal-over-SSH would need a path into the LAN for a GitHub-hosted runner to reach, which the `updater` avoids entirely (the box only ever reaches out to `docker pull`, GitHub never executes anything on it). Kamal, Solid Cache, and Solid Cable were all stripped from the Rails 8 defaults — Kamal because it's not the deploy mechanism, Cache/Cable because nothing uses a cache store or ActionCable yet and keeping them would mean provisioning 2 more logical Postgres databases for nothing. Production now has just `primary` + `queue` (Solid Queue, for the recurring scrape job).
 
 **Search strategy:**
-- Category sweeps (no keyword) and keyword sweeps (no category) are run as separate, independent searches — never combined into one API call. Reasoning: category sweeps catch listings a keyword search structurally can't (a seller who doesn't know what model they have can't type it in the title, but the listing still lands in *some* category); keyword sweeps catch listings a category sweep can't (a seller who typed the right model but miscategorized the listing). Combining them into one call would cost real recall (missing correctly-labeled-but-miscategorized listings) for a precision benefit that's small given how specific the actual keywords are (model numbers, misspellings, RAM part numbers rarely collide across categories anyway).
-- Price cap is a single global env var (e.g. `PRICE_CAP_CENTS`), not per-search-term — it's a scalar affordability threshold ("can we afford to even look at this"), not a growing collection, so it follows the config-not-DB-settings reasoning below rather than the search-terms-as-data reasoning.
-- Search terms (which categories, which keywords) are modeled as **two separate DB tables/resources** (`search_categories`, `search_keywords`), not env vars and not one `search_terms` table with a `kind` column. Reasoning: these are a growing, edited-over-time collection (not a single-tenant config scalar — see reef-1000's "config, not database-backed settings" principle, which this *doesn't* contradict since that rule was about identity/credential scalars, not collections with their own lifecycle), and a category has genuinely different attributes than a keyword (an external taxonomy ID + optional human-readable name, vs. just a free-text phrase) — forcing both into one `kind`/`value` table loses that and relies on app logic instead of the schema to keep them mutually exclusive. Not yet migrated.
+- **Category sweeps are punted, not just deferred in code — there's no `SearchCategory` model at all right now.** Category-only search (no keyword) has no text/relevance matching whatsoever — it's literally "fetch every active listing in that eBay category, newest first," filtered only by price cap. The one thing it uniquely catches (a seller who doesn't know what model they have, so it'd never surface via keyword) is real, but that signal is buried under huge volume that's either already findable via keyword search anyway, or just irrelevant noise — and *right now*, nothing downstream (no photo sorter, no extraction, no scorer) exists to sift that volume. Paying the cost (API calls, storage, noise) without being able to realize the benefit isn't worth it yet. Revisit once there's a real pipeline stage that can use the volume.
+- Keyword sweeps (`search_keywords`) run unrestricted — no category filter on a keyword search either, since that would cost real recall (missing a correctly-labeled listing that got miscategorized) for little precision gain given how specific the actual keywords are (model numbers, misspellings, RAM part numbers).
+- Price cap is a single global env var (e.g. `PRICE_CAP_CENTS`), not per-search-term — it's a scalar affordability threshold ("can we afford to even look at this"), not a growing collection, so it follows the config-not-DB-settings reasoning rather than the search-terms-as-data reasoning below.
+- Keywords are modeled as their own DB table/resource (`search_keywords`), not an env var — it's a growing, edited-over-time collection (not a single-tenant config scalar — see reef-1000's "config, not database-backed settings" principle, which this *doesn't* contradict since that rule was about identity/credential scalars, not collections with their own lifecycle). If category sweeps come back later, decide then whether they're worth a `SearchCategory` table of their own again, rather than assuming the old shape still applies.
 
 **Funnel stages, clarified:** scraper (now) is purely an affordability filter — "get everything that fits our search criteria and the price cap." The photo sorter (plan's phase 2) classifies which photos are even useful, no value judgment yet. Extraction (phase 3) reads the true specs off those photos. A **deal scorer** (the plan's own "Later" phase) is a distinct fourth stage — diffing extracted true specs against current market prices for those specific components to actually rank deals. That only works if extraction produces structured fields (e.g. "4x 32GB DDR4 RDIMM"), not prose — worth keeping in mind for how extraction gets designed later, nothing to act on now.
 
 ## Open / not yet decided
 
 - The plan's original "Datasette for zero-code DB browsing" doesn't work — Datasette is SQLite-only, no Postgres plugin exists on PyPI. Need to actually decide between pgweb, Adminer, or a db-to-sqlite sync + real Datasette. Explicitly deferred — not worth deciding before there's real data to browse.
-- eBay category IDs for the search sweeps — need to actually look these up via the Taxonomy API, not guess.
-- The scraper itself hasn't been written yet — only the HTTP client + token caching (`Ebay::Base`/`Ebay::Authenticator`) exist so far, not search/item-detail calls, an importer, or the recurring job.
-- `search_categories`/`search_keywords` migrations — shape decided (see above), not yet written.
+- The scraper itself hasn't been written yet — only `Ebay::Base`/`Ebay::Authenticator` (HTTP client + token caching) and the `SearchKeyword` model exist so far. `Ebay::Search`, `KeywordSweepJob`, `SweepSchedulerJob`, an importer, and persistence into `listings`/`images` are all still ahead — intentionally sequenced so the "data → actual eBay call" path gets proven (this slice) before parsing/persisting results (next slice).
 - How Python/ML eventually gets at Rails' data — explicitly punted, not a today problem.
 - The review UI itself — not discussed yet.
 - The actual Unraid share path in `docker-compose.yml`'s `updater` service (`/mnt/user/godslayerrr/godslayer`) is still a guess, not confirmed against a real checkout on Urithiru.
@@ -57,7 +56,7 @@ This is Rob's project to learn and to be able to defend in an interview. The poi
 ## State of the repo right now
 
 - Rails app at the repo root (module `Godslayer`), `listings`/`images` migrations and models matching the schema below — migrated and verified against the test database and in a real `docker-compose` smoke test (production image boots, `/up` returns 200, both logical databases get created), but no persistent local development database exists yet.
-- `app/services/ebay/base.rb` + `app/services/ebay/authenticator.rb` — the only scraper code written so far (HTTP client + OAuth2 token caching, TDD'd with Minitest + WebMock, reef-1000-style conventions: namespaced, no-parens-on-calls, `self.verb = new.verb` delegation). No search, item-detail, importer, or job code yet.
+- `app/services/ebay/base.rb` + `app/services/ebay/authenticator.rb` (HTTP client + OAuth2 token caching) and the `SearchKeyword` model — TDD'd with Minitest + WebMock, reef-1000-style conventions (namespaced, no-parens-on-calls, `self.verb = new.verb` delegation). No `Ebay::Search`, item-detail, importer, or job code yet.
 - Kamal, Solid Cache, and Solid Cable removed; Rails credentials/master key removed in favor of a plain `SECRET_KEY_BASE` env var (see "Secrets" above).
 - `docker-compose.yml`, `Dockerfile`, `docker/postgres/init-queue-db.sh` exist and are verified working end-to-end locally — not yet deployed to Urithiru.
 - CI (`.github/workflows/ci.yml`): `lint`, `test`, `scan_ruby`, `build_and_push` all green on every push to `main`; `build_and_push` pushes to GHCR.
@@ -94,17 +93,6 @@ create_table :images do |t|
   t.datetime :downloaded_at
   t.timestamps
   # unique index on [:listing_id, :position]
-end
-```
-
-**Planned, not yet migrated:**
-
-```ruby
-create_table :search_categories do |t|
-  t.string  :ebay_category_id, null: false
-  t.string  :name                        # human-readable, for your own reference
-  t.boolean :active, null: false, default: true
-  t.timestamps
 end
 
 create_table :search_keywords do |t|

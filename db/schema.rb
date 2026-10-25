@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_061544) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_24_230932) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,6 +43,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_061544) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["ebay_item_id"], name: "index_listings_on_ebay_item_id", unique: true
+  end
+
+  create_table "search_keywords", force: :cascade do |t|
+    t.string "phrase", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["phrase"], name: "index_search_keywords_on_phrase", unique: true
   end
 
   add_foreign_key "images", "listings", on_delete: :cascade
