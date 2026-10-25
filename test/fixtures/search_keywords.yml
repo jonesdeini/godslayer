@@ -7,3 +7,7 @@ one:
 two:
   phrase: Pro Liant
   active: true
+
+retired:
+  phrase: Xenon
+  active: false

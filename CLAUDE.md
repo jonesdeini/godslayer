@@ -47,7 +47,7 @@ This is Rob's project to learn and to be able to defend in an interview. The poi
 ## Open / not yet decided
 
 - The plan's original "Datasette for zero-code DB browsing" doesn't work — Datasette is SQLite-only, no Postgres plugin exists on PyPI. Need to actually decide between pgweb, Adminer, or a db-to-sqlite sync + real Datasette. Explicitly deferred — not worth deciding before there's real data to browse.
-- The scraper itself hasn't been written yet — only `Ebay::Base`/`Ebay::Authenticator` (HTTP client + token caching) and the `SearchKeyword` model exist so far. `Ebay::Search`, `KeywordSweepJob`, `SweepSchedulerJob`, an importer, and persistence into `listings`/`images` are all still ahead — intentionally sequenced so the "data → actual eBay call" path gets proven (this slice) before parsing/persisting results (next slice).
+- The "data → actual eBay call" path is proven (`SearchKeyword` → `SweepSchedulerJob` → `KeywordSweepJob` → `Ebay::Search.keyword`), but nothing happens with the response yet — no parsing, no persistence into `listings`/`images`. That's the next slice.
 - How Python/ML eventually gets at Rails' data — explicitly punted, not a today problem.
 - The review UI itself — not discussed yet.
 - The actual Unraid share path in `docker-compose.yml`'s `updater` service (`/mnt/user/godslayerrr/godslayer`) is still a guess, not confirmed against a real checkout on Urithiru.
@@ -56,7 +56,7 @@ This is Rob's project to learn and to be able to defend in an interview. The poi
 ## State of the repo right now
 
 - Rails app at the repo root (module `Godslayer`), `listings`/`images` migrations and models matching the schema below — migrated and verified against the test database and in a real `docker-compose` smoke test (production image boots, `/up` returns 200, both logical databases get created), but no persistent local development database exists yet.
-- `app/services/ebay/base.rb` + `app/services/ebay/authenticator.rb` (HTTP client + OAuth2 token caching) and the `SearchKeyword` model — TDD'd with Minitest + WebMock, reef-1000-style conventions (namespaced, no-parens-on-calls, `self.verb = new.verb` delegation). No `Ebay::Search`, item-detail, importer, or job code yet.
+- `Ebay::Base`/`Ebay::Authenticator`/`Ebay::Search`, the `SearchKeyword` model, `KeywordSweepJob`, and `SweepSchedulerJob` (hourly via `config/recurring.yml`) — all TDD'd with Minitest + WebMock, reef-1000-style conventions (namespaced, no-parens-on-calls, `self.verb = new.verb` delegation). No item-detail fetch, importer, or persistence into `listings`/`images` yet — the sweep finds results but currently does nothing with them.
 - Kamal, Solid Cache, and Solid Cable removed; Rails credentials/master key removed in favor of a plain `SECRET_KEY_BASE` env var (see "Secrets" above).
 - `docker-compose.yml`, `Dockerfile`, `docker/postgres/init-queue-db.sh` exist and are verified working end-to-end locally — not yet deployed to Urithiru.
 - CI (`.github/workflows/ci.yml`): `lint`, `test`, `scan_ruby`, `build_and_push` all green on every push to `main`; `build_and_push` pushes to GHCR.
