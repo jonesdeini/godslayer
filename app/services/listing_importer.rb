@@ -23,7 +23,8 @@ class ListingImporter
       condition: raw["condition"],
       category_id: raw["categoryId"],
       seller: raw.dig("seller", "username"),
-      item_location: item_location(raw["itemLocation"]),
+      postal_code: raw.dig("itemLocation", "postalCode"),
+      country: raw.dig("itemLocation", "country"),
       url: raw["itemWebUrl"],
       raw: raw
     )
@@ -48,10 +49,5 @@ class ListingImporter
   def price_cents(value)
     return 0 if value.nil?
     (BigDecimal(value) * 100).round.to_i
-  end
-
-  def item_location(item_location)
-    return nil unless item_location
-    [ item_location["city"], item_location["stateOrProvince"], item_location["country"] ].compact_blank.join ", "
   end
 end

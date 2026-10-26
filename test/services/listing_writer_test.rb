@@ -12,7 +12,8 @@ class ListingWriterTest < ActiveSupport::TestCase
       condition: "New",
       category_id: "177",
       seller: "testuser_developer514",
-      item_location: "San Jose, California, US",
+      postal_code: "95112",
+      country: "US",
       url: "https://sandbox.ebay.com/itm/110591042924",
       raw: { "itemId" => "v1|110591042924|0" }
     )
@@ -20,6 +21,8 @@ class ListingWriterTest < ActiveSupport::TestCase
     listing = Listing.find listing_id
     assert_equal "v1|110591042924|0", listing.ebay_item_id
     assert_equal 49999, listing.price_cents
+    assert_equal "95112", listing.postal_code
+    assert_equal "US", listing.country
     assert_not_nil listing.first_seen_at
     assert_equal listing.first_seen_at, listing.last_seen_at
   end
@@ -33,7 +36,8 @@ class ListingWriterTest < ActiveSupport::TestCase
       condition: "New",
       category_id: "177",
       seller: "testuser_developer514",
-      item_location: "San Jose, California, US",
+      postal_code: "95112",
+      country: "US",
       url: "https://sandbox.ebay.com/itm/110591042924",
       raw: { "version" => 1 }
     )
@@ -48,7 +52,8 @@ class ListingWriterTest < ActiveSupport::TestCase
         condition: "New",
         category_id: "177",
         seller: "testuser_developer514",
-        item_location: "San Jose, California, US",
+        postal_code: "95112",
+        country: "US",
         url: "https://sandbox.ebay.com/itm/110591042924",
         raw: { "version" => 2 }
       )

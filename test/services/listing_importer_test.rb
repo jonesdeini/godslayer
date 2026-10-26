@@ -12,7 +12,7 @@ class ListingImporterTest < ActiveSupport::TestCase
     "price" => { "value" => "499.99", "currency" => "USD" },
     "condition" => "New",
     "categoryId" => "177",
-    "itemLocation" => { "city" => "San Jose", "stateOrProvince" => "California", "country" => "US" },
+    "itemLocation" => { "city" => "San Jose", "stateOrProvince" => "California", "postalCode" => "951**", "country" => "US" },
     "image" => { "imageUrl" => "https://images.example.com/primary.jpg" },
     "additionalImages" => [
       { "imageUrl" => "https://images.example.com/second.jpg" },
@@ -26,14 +26,15 @@ class ListingImporterTest < ActiveSupport::TestCase
     ]
   }.to_json
 
-  test "imports a listing with price parsed to cents and item_location formatted" do
+  test "imports a listing with price parsed to cents and location fields pulled straight from itemLocation" do
     listing_id = ListingImporter.import REAL_SHAPED_DETAIL
 
     listing = Listing.find listing_id
     assert_equal "v1|110591042924|0", listing.ebay_item_id
     assert_equal 49999, listing.price_cents
     assert_equal "USD", listing.currency
-    assert_equal "San Jose, California, US", listing.item_location
+    assert_equal "951**", listing.postal_code
+    assert_equal "US", listing.country
     assert_equal "testuser_developer514", listing.seller
     assert_equal JSON.parse(REAL_SHAPED_DETAIL), listing.raw
   end

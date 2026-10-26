@@ -9,6 +9,10 @@ Dense reference material, kept separate from `CLAUDE.md` because it's only relev
 - **The OAuth scope string does not change between sandbox/production.** `https://api.ebay.com/oauth/api_scope` is a single hardcoded constant in the SDK, not environment-keyed like the host is, and isn't even part of the SDK's per-environment config template (`demo/ebay-config-sample.json` only varies `baseUrl`; scope is a separate runtime argument). It's an opaque permission identifier the auth server matches against, never an endpoint actually requested — both sandbox and production auth servers are configured to recognize the identical string.
 - **Real verified test (2026-10-26):** token exchange against the real sandbox endpoint succeeded with real App ID/Cert ID credentials — got back a real ~1940-char token.
 
+## Marketplace header (`X-EBAY-C-MARKETPLACE-ID`)
+
+**Does not filter by item location at all.** It picks which marketplace/site's listing pool you're querying (ebay.com vs. ebay.ca vs. ebay.co.uk, etc.), not where the item or seller is physically located. A Canadian seller listing on ebay.com (`EBAY_US`) shows up in our results same as a US seller — confirmed via the official docs (`ItemSummary` reference: "does not indicate a language preference or consumer location"). Real item-location filtering, if ever wanted, is a separate mechanism (`filter=deliveryCountry:...` or an end-user-context header) — not something `EBAY_US` does for you.
+
 ## Browse API search (`/buy/browse/v1/item_summary/search`)
 
 - **Real response shape, confirmed via a live sandbox call (2026-10-26, `q=laptop`):** `href`, `total`, `next`, `limit`, `offset`, `itemSummaries[]`. Matches what was guessed for the abandoned Go version.

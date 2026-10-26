@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ListingWriter
-  def self.write(ebay_item_id:, title:, price_cents:, currency:, condition:, category_id:, seller:, item_location:, url:, raw:)
+  def self.write(ebay_item_id:, title:, price_cents:, currency:, condition:, category_id:, seller:, postal_code:, country:, url:, raw:)
     now = Time.current
     result = Listing.upsert(
       {
@@ -12,7 +12,8 @@ class ListingWriter
         condition: condition,
         category_id: category_id,
         seller: seller,
-        item_location: item_location,
+        postal_code: postal_code,
+        country: country,
         url: url,
         raw: raw,
         first_seen_at: now,

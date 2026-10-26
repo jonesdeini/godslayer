@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_230932) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_184357) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,13 +35,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_230932) do
     t.string "condition"
     t.string "category_id"
     t.string "seller"
-    t.string "item_location"
     t.string "url", null: false
     t.jsonb "raw", null: false
     t.datetime "first_seen_at", null: false
     t.datetime "last_seen_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "postal_code"
+    t.string "country"
     t.index ["ebay_item_id"], name: "index_listings_on_ebay_item_id", unique: true
   end
 
