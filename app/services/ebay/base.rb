@@ -2,6 +2,12 @@
 
 module Ebay
   class Base
+    API_HOSTS = { "sandbox" => "api.sandbox.ebay.com", "production" => "api.ebay.com" }.freeze
+
+    def self.api_host
+      API_HOSTS.fetch Rails.application.config.x.ebay.environment
+    end
+
     private
 
     def get(path)
@@ -14,7 +20,7 @@ module Ebay
     end
 
     def base_url
-      "https://api.ebay.com/buy/browse/v1"
+      "https://#{self.class.api_host}/buy/browse/v1"
     end
   end
 end

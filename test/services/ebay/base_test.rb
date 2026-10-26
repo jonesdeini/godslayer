@@ -25,4 +25,24 @@ class Ebay::BaseTest < ActiveSupport::TestCase
 
     assert_equal "pong", FakeEndpoint.new.ping
   end
+
+  test "hits the sandbox host when EBAY_ENVIRONMENT is sandbox" do
+    Rails.application.config.x.ebay.environment = "sandbox"
+    stub_request(:post, "https://api.sandbox.ebay.com/identity/v1/oauth2/token")
+      .to_return(status: 200, body: { access_token: "fake-token", expires_in: 7200 }.to_json)
+    stub_request(:get, "https://api.sandbox.ebay.com/buy/browse/v1/ping")
+      .to_return(status: 200, body: "pong")
+
+    assert_equal "pong", FakeEndpoint.new.ping
+  ensure
+    Rails.application.config.x.ebay.environment = "production"
+  end
+
+  test "raises on an unrecognized EBAY_ENVIRONMENT value" do
+    Rails.application.config.x.ebay.environment = "staging"
+
+    assert_raises(KeyError) { FakeEndpoint.new.ping }
+  ensure
+    Rails.application.config.x.ebay.environment = "production"
+  end
 end

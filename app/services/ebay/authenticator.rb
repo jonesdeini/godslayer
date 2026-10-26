@@ -2,7 +2,7 @@
 
 module Ebay
   class Authenticator
-    TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token".freeze
+    TOKEN_PATH = "/identity/v1/oauth2/token"
     SCOPE = "https://api.ebay.com/oauth/api_scope".freeze
 
     def self.token
@@ -22,12 +22,17 @@ module Ebay
       response = HTTP.basic_auth(
         user: Rails.application.config.x.ebay.client_id,
         pass: Rails.application.config.x.ebay.client_secret
-      ).post(TOKEN_URL, form: { grant_type: "client_credentials", scope: SCOPE })
+      ).post(token_url, form: { grant_type: "client_credentials", scope: SCOPE })
 
       body = JSON.parse response.body.to_s
       @expires_at = Time.now + body.fetch("expires_in").to_i
       body.fetch "access_token"
     end
     private_class_method :fetch_token
+
+    def self.token_url
+      "https://#{Ebay::Base.api_host}#{TOKEN_PATH}"
+    end
+    private_class_method :token_url
   end
 end

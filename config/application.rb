@@ -41,6 +41,7 @@ module Godslayer
     config.x.ebay.client_id = ENV.fetch "EBAY_CLIENT_ID"
     config.x.ebay.client_secret = ENV.fetch "EBAY_CLIENT_SECRET"
     config.x.ebay.marketplace_id = ENV.fetch "EBAY_MARKETPLACE_ID", "EBAY_US"
+    config.x.ebay.environment = ENV.fetch "EBAY_ENVIRONMENT"
     config.x.ebay.price_cap_cents = ENV.fetch("PRICE_CAP_CENTS", "0").to_i
 
     # Don't generate system test files.

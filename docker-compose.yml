@@ -29,6 +29,7 @@ services:
       EBAY_CLIENT_ID: ${EBAY_CLIENT_ID}
       EBAY_CLIENT_SECRET: ${EBAY_CLIENT_SECRET}
       EBAY_MARKETPLACE_ID: ${EBAY_MARKETPLACE_ID}
+      EBAY_ENVIRONMENT: ${EBAY_ENVIRONMENT}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
