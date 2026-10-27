@@ -55,8 +55,6 @@ This is Rob's project to learn and to be able to defend in an interview. The poi
 - The plan's original "Datasette for zero-code DB browsing" doesn't work — Datasette is SQLite-only, no Postgres plugin exists on PyPI. Need to actually decide between pgweb, Adminer, or a db-to-sqlite sync + real Datasette. Explicitly deferred — not worth deciding before there's real data to browse.
 - How Python/ML eventually gets at Rails' data — explicitly punted, not a today problem.
 - The review UI itself — not discussed yet.
-- The actual Unraid share path in `docker-compose.yml`'s `updater` service (`/mnt/user/godslayerrr/godslayer`) is still a guess, not confirmed against a real checkout on Shadesmar.
-- The old `master` branch still exists on GitHub (renamed to `main` locally and as the default branch, but deleting the remote `master` got blocked by the permission system as a destructive action) — needs explicit go-ahead to actually delete.
 
 ## State of the repo right now
 
@@ -64,7 +62,7 @@ This is Rob's project to learn and to be able to defend in an interview. The poi
 - **The full scraper pipeline works end-to-end, verified against the real sandbox API, not just stubbed tests (2026-10-26):** `SearchKeyword` → `SweepSchedulerJob` → `KeywordSweepJob` → `Ebay::Search.keyword` → `Ebay::Item.detail` (per result) → `ListingImporter` → `ListingWriter`/`ImageWriter`. A real run against `q=laptop` saved 99 listings and 198 image rows for real (demo data, cleaned up after). All TDD'd with Minitest + WebMock, reef-1000-style conventions (namespaced API clients, flat domain services, no-parens-on-calls, `self.verb = new.verb` delegation). A bad item (failed fetch, unparseable response) is caught and logged per-item, doesn't sink the rest of the sweep.
 - **Not built:** image *downloading* (URLs are saved, files are not - deliberately deferred, needs the real storage/NAS decision first), exclude phrases, anything using `localizedAspects` (confirmed present in real item-detail responses, structured `{name, value}` pairs - relevant for the later deal-scorer phase, not touched yet).
 - Kamal, Solid Cache, and Solid Cable removed; Rails credentials/master key removed in favor of a plain `SECRET_KEY_BASE` env var (see "Secrets" above).
-- `docker-compose.yml`, `Dockerfile`, `docker/postgres/init-queue-db.sh` exist and are verified working end-to-end locally — not yet deployed to Shadesmar.
+- **Actually deployed and running on Shadesmar (2026-10-27), not just working locally:** `postgres`/`web`/`jobs`/`updater` all up, `web` passing its `/up` healthcheck. The `updater`'s first poll loop ran for real (pulled both images, confirmed health) — `git push` to `main` → CI's `build_and_push` → GHCR → `updater` picks it up within 5 minutes, no manual step. The GHCR packages for both this repo and reef-1000 turned out to already be public (inherited from the public source repos) — the `docker login`/PAT path we went down first was chasing a stale cached credential, not an actual auth requirement; `docker logout ghcr.io` was the real fix. Still running against sandbox eBay credentials (`EBAY_ENVIRONMENT=production` not switched on yet).
 - CI (`.github/workflows/ci.yml`): `lint`, `test`, `scan_ruby`, `build_and_push` all green on every push to `main`; `build_and_push` pushes to GHCR.
 - `ml/` — empty placeholder.
 - **eBay Developer Program account approved 2026-10-26** — real sandbox credentials are in `.env` and working (App ID/Cert ID; Dev ID confirmed unused for this OAuth flow). Production access not yet granted/used.
