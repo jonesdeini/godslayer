@@ -7,6 +7,9 @@
 # The real search_keywords list (models/exclude phrases) - not for the public repo.
 /search_terms.json
 
+# Same reason - the real target vendor/model/chip research.
+/target-hardware.md
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
