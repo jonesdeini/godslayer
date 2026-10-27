@@ -3,7 +3,7 @@
 class ImageWriter
   def self.write(listing_id:, position:, source_url:)
     result = Image.upsert(
-      { listing_id: listing_id, position: position, source_url: source_url },
+      { listing_id:, position:, source_url: },
       unique_by: [ :listing_id, :position ],
       update_only: [ :source_url ]
     )

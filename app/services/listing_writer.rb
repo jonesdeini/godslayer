@@ -5,17 +5,17 @@ class ListingWriter
     now = Time.current
     result = Listing.upsert(
       {
-        ebay_item_id: ebay_item_id,
-        title: title,
-        price_cents: price_cents,
-        currency: currency,
-        condition: condition,
-        category_id: category_id,
-        seller: seller,
-        postal_code: postal_code,
-        country: country,
-        url: url,
-        raw: raw,
+        ebay_item_id:,
+        title:,
+        price_cents:,
+        currency:,
+        condition:,
+        category_id:,
+        seller:,
+        postal_code:,
+        country:,
+        url:,
+        raw:,
         first_seen_at: now,
         last_seen_at: now
       },

@@ -26,13 +26,13 @@ class ListingImporter
       postal_code: raw.dig("itemLocation", "postalCode"),
       country: raw.dig("itemLocation", "country"),
       url: raw["itemWebUrl"],
-      raw: raw
+      raw:
     )
   end
 
   def write_images(listing_id, raw)
     image_urls(raw).each_with_index do |url, position|
-      ImageWriter.write listing_id: listing_id, position: position, source_url: url
+      ImageWriter.write listing_id:, position:, source_url: url
     end
   end
 

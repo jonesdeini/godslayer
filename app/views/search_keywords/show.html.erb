@@ -1,0 +1,8 @@
+<p><%= link_to "Back", search_keywords_path %></p>
+
+<h1><%= search_keyword.phrase %></h1>
+
+<p>Active: <%= search_keyword.active? ? "yes" : "no" %></p>
+<p>Exclude phrase: <%= search_keyword.exclude_phrase %></p>
+
+<p><%= link_to "Edit", edit_search_keyword_path(search_keyword) %></p>

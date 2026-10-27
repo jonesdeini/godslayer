@@ -18,3 +18,7 @@ Style/MethodCallWithArgsParentheses:
 Style/FrozenStringLiteralComment:
   Enabled: true
   EnforcedStyle: always
+
+Style/HashSyntax:
+  Enabled: true
+  EnforcedShorthandSyntax: always

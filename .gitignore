@@ -4,6 +4,9 @@
 # Real secrets/local overrides. .env.example and .env.test are tracked on purpose.
 /.env
 
+# The real search_keywords list (models/exclude phrases) - not for the public repo.
+/search_terms.json
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
