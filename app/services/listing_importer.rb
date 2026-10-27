@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class ListingImporter
-  def self.import(raw_json)
-    new.import raw_json
+  def self.import(raw_json, search_keyword_id:)
+    new.import raw_json, search_keyword_id:
   end
 
-  def import(raw_json)
+  def import(raw_json, search_keyword_id:)
     raw = JSON.parse raw_json
     listing_id = write_listing raw
+    ListingSearchKeywordWriter.write(listing_id:, search_keyword_id:)
     write_images listing_id, raw
     listing_id
   end

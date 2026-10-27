@@ -27,7 +27,7 @@ class ListingImporterTest < ActiveSupport::TestCase
   }.to_json
 
   test "imports a listing with price parsed to cents and location fields pulled straight from itemLocation" do
-    listing_id = ListingImporter.import REAL_SHAPED_DETAIL
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
     listing = Listing.find listing_id
     assert_equal "v1|110591042924|0", listing.ebay_item_id
@@ -40,7 +40,7 @@ class ListingImporterTest < ActiveSupport::TestCase
   end
 
   test "imports every image in order: primary first, then additionalImages" do
-    listing_id = ListingImporter.import REAL_SHAPED_DETAIL
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
     images = Image.where(listing_id:).order :position
     assert_equal 3, images.size
@@ -54,17 +54,23 @@ class ListingImporterTest < ActiveSupport::TestCase
     detail = JSON.parse REAL_SHAPED_DETAIL
     detail.delete "additionalImages"
 
-    listing_id = ListingImporter.import detail.to_json
+    listing_id = ListingImporter.import detail.to_json, search_keyword_id: search_keywords(:one).id
 
     assert_equal 1, Image.where(listing_id:).count
   end
 
   test "re-importing the same item is idempotent" do
-    first_id = ListingImporter.import REAL_SHAPED_DETAIL
-    second_id = ListingImporter.import REAL_SHAPED_DETAIL
+    first_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+    second_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
     assert_equal first_id, second_id
     assert_equal 1, Listing.where(ebay_item_id: "v1|110591042924|0").count
     assert_equal 3, Image.where(listing_id: first_id).count
+  end
+
+  test "records which keyword surfaced the listing" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    assert ListingSearchKeyword.exists?(listing_id:, search_keyword_id: search_keywords(:one).id)
   end
 end

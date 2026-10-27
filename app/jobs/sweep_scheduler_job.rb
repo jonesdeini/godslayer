@@ -5,7 +5,7 @@ class SweepSchedulerJob < ApplicationJob
 
   def perform
     SearchKeyword.where(active: true).find_each do |keyword|
-      KeywordSweepJob.perform_later keyword.phrase
+      KeywordSweepJob.perform_later keyword
     end
   end
 end

@@ -22,11 +22,14 @@ class KeywordSweepJobTest < ActiveJob::TestCase
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C111%7C0").to_return status: 200, body: detail_111
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C222%7C0").to_return status: 200, body: detail_222
 
-    KeywordSweepJob.perform_now "R730xd"
+    KeywordSweepJob.perform_now search_keywords(:one)
 
     assert_equal 2, Listing.count
     assert Listing.exists?(ebay_item_id: "v1|111|0")
     assert Listing.exists?(ebay_item_id: "v1|222|0")
+
+    listing = Listing.find_by ebay_item_id: "v1|111|0"
+    assert ListingSearchKeyword.exists?(listing_id: listing.id, search_keyword_id: search_keywords(:one).id)
   end
 
   test "skips an item whose detail fetch fails, without losing the others" do
@@ -39,7 +42,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
                    itemWebUrl: "https://ebay.com/itm/222" }.to_json
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C222%7C0").to_return status: 200, body: detail_222
 
-    KeywordSweepJob.perform_now "R730xd"
+    KeywordSweepJob.perform_now search_keywords(:one)
 
     assert_equal 1, Listing.count
     assert Listing.exists?(ebay_item_id: "v1|222|0")
@@ -56,7 +59,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
                    itemWebUrl: "https://ebay.com/itm/222" }.to_json
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C222%7C0").to_return status: 200, body: detail_222
 
-    KeywordSweepJob.perform_now "R730xd"
+    KeywordSweepJob.perform_now search_keywords(:one)
 
     assert_equal 1, Listing.count
     assert Listing.exists?(ebay_item_id: "v1|222|0")
