@@ -1,0 +1,26 @@
+<%= form_with model: search_keyword do |form| %>
+  <% if search_keyword.errors.any? %>
+    <ul>
+      <% search_keyword.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :phrase %>
+    <%= form.text_field :phrase %>
+  </div>
+
+  <div>
+    <%= form.label :exclude_phrase %>
+    <%= form.text_field :exclude_phrase %>
+  </div>
+
+  <div>
+    <%= form.label :active %>
+    <%= form.check_box :active %>
+  </div>
+
+  <%= form.submit %>
+<% end %>

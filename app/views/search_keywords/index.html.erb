@@ -1,0 +1,24 @@
+<h1>Search keywords</h1>
+
+<p><%= link_to "Add keyword", new_search_keyword_path %></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phrase</th>
+      <th>Active</th>
+      <th>Exclude phrase</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% search_keywords.each do |search_keyword| %>
+      <tr>
+        <td><%= link_to search_keyword.phrase, search_keyword %></td>
+        <td><%= search_keyword.active? ? "yes" : "no" %></td>
+        <td><%= search_keyword.exclude_phrase %></td>
+        <td><%= link_to "Edit", edit_search_keyword_path(search_keyword) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
