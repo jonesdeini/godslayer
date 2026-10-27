@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_161646) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_211533) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,6 +25,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_161646) do
     t.datetime "updated_at", null: false
     t.index ["listing_id", "position"], name: "index_images_on_listing_id_and_position", unique: true
     t.index ["listing_id"], name: "index_images_on_listing_id"
+  end
+
+  create_table "listing_search_keywords", force: :cascade do |t|
+    t.bigint "listing_id", null: false
+    t.bigint "search_keyword_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["listing_id", "search_keyword_id"], name: "idx_on_listing_id_search_keyword_id_3229ba5867", unique: true
+    t.index ["listing_id"], name: "index_listing_search_keywords_on_listing_id"
+    t.index ["search_keyword_id"], name: "index_listing_search_keywords_on_search_keyword_id"
   end
 
   create_table "listings", force: :cascade do |t|
@@ -56,4 +66,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_161646) do
   end
 
   add_foreign_key "images", "listings", on_delete: :cascade
+  add_foreign_key "listing_search_keywords", "listings"
+  add_foreign_key "listing_search_keywords", "search_keywords"
 end

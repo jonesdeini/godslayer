@@ -6,8 +6,8 @@ class SweepSchedulerJobTest < ActiveJob::TestCase
   test "enqueues a KeywordSweepJob for each active keyword" do
     SweepSchedulerJob.perform_now
 
-    assert_enqueued_with job: KeywordSweepJob, args: [ search_keywords(:one).phrase ]
-    assert_enqueued_with job: KeywordSweepJob, args: [ search_keywords(:two).phrase ]
+    assert_enqueued_with job: KeywordSweepJob, args: [ search_keywords(:one) ]
+    assert_enqueued_with job: KeywordSweepJob, args: [ search_keywords(:two) ]
   end
 
   test "does not enqueue a job for a retired keyword" do
