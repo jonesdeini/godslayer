@@ -30,6 +30,7 @@ services:
       EBAY_CLIENT_SECRET: ${EBAY_CLIENT_SECRET}
       EBAY_MARKETPLACE_ID: ${EBAY_MARKETPLACE_ID}
       EBAY_ENVIRONMENT: ${EBAY_ENVIRONMENT}
+      PRICE_CAP_CENTS: ${PRICE_CAP_CENTS}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
@@ -56,9 +57,8 @@ services:
       COMPOSE_PROJECT_NAME: godslayer
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      # TODO: confirm this matches the actual Unraid share path once the
-      # repo is checked out there (see Shadesmar/reef-1000's "reefff"
-      # share-naming convention - this is a guess, not confirmed).
+      # Confirmed against a real checkout on Shadesmar, matching
+      # reef-1000's real /mnt/user/reefff/reef-1000 convention.
       - /mnt/user/godslayerrr/godslayer:/mnt/user/godslayerrr/godslayer
     working_dir: /mnt/user/godslayerrr/godslayer
     entrypoint: sh
