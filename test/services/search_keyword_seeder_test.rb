@@ -5,7 +5,7 @@ require "test_helper"
 class SearchKeywordSeederTest < ActiveSupport::TestCase
   test "creates new keywords from the file" do
     with_seed_file [ { "phrase" => "totally fake test model", "exclude_phrase" => "placeholder exclude", "active" => true } ] do |path|
-      SearchKeywordSeeder.seed path: path
+      SearchKeywordSeeder.seed path:
     end
 
     keyword = SearchKeyword.find_by! phrase: "totally fake test model"
@@ -17,7 +17,7 @@ class SearchKeywordSeederTest < ActiveSupport::TestCase
     existing = search_keywords :one
 
     with_seed_file [ { "phrase" => existing.phrase, "exclude_phrase" => "updated exclude", "active" => false } ] do |path|
-      SearchKeywordSeeder.seed path: path
+      SearchKeywordSeeder.seed path:
     end
 
     assert_equal "updated exclude", existing.reload.exclude_phrase
@@ -29,7 +29,7 @@ class SearchKeywordSeederTest < ActiveSupport::TestCase
     assert existing.active?
 
     with_seed_file [ { "phrase" => "some other phrase entirely" } ] do |path|
-      SearchKeywordSeeder.seed path: path
+      SearchKeywordSeeder.seed path:
     end
 
     assert_not existing.reload.active?

@@ -42,7 +42,7 @@ class ListingImporterTest < ActiveSupport::TestCase
   test "imports every image in order: primary first, then additionalImages" do
     listing_id = ListingImporter.import REAL_SHAPED_DETAIL
 
-    images = Image.where(listing_id: listing_id).order :position
+    images = Image.where(listing_id:).order :position
     assert_equal 3, images.size
     assert_equal [ "https://images.example.com/primary.jpg",
                   "https://images.example.com/second.jpg",
@@ -56,7 +56,7 @@ class ListingImporterTest < ActiveSupport::TestCase
 
     listing_id = ListingImporter.import detail.to_json
 
-    assert_equal 1, Image.where(listing_id: listing_id).count
+    assert_equal 1, Image.where(listing_id:).count
   end
 
   test "re-importing the same item is idempotent" do
