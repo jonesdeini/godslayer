@@ -14,7 +14,7 @@ class ListingImporter
     return listing.id unless new_listing || listing.seller_item_revision_changed?
 
     listing.save!
-    Rabbitmq::ListingReadyPublisher.publish(listing_id: listing.id) if new_listing
+    Rabbitmq::ListingReadyPublisher.publish listing_id: listing.id if new_listing
     listing.id
   end
 end
