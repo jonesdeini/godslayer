@@ -44,6 +44,8 @@ module Godslayer
     config.x.ebay.environment = ENV.fetch "EBAY_ENVIRONMENT"
     config.x.ebay.price_cap_cents = ENV.fetch("PRICE_CAP_CENTS", "0").to_i
 
+    config.x.rabbitmq.url = ENV.fetch "RABBITMQ_URL", "amqp://guest:guest@localhost:5672"
+
     # Don't generate system test files.
     config.generators.system_tests = nil
   end

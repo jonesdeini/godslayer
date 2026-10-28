@@ -5,6 +5,8 @@ require "test_helper"
 class ListingImporterTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
+  setup { purge_listing_ready_queue }
+
   # Trimmed from a real sandbox item-detail response (2026-10-26) - same
   # field names/shapes, just with the (unrelated) 35-state tax array and
   # other noise stripped out for readability.
@@ -83,5 +85,18 @@ class ListingImporterTest < ActiveSupport::TestCase
       assert_equal 49999, listing.price_cents
       assert_equal original_last_seen_at, listing.last_seen_at
     end
+  end
+
+  test "publishes a listing_ready message for a brand new listing" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    assert_equal 1, pop_listing_ready_messages(matching: listing_id).size
+  end
+
+  test "does not publish again when the same listing is re-swept" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+    ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    assert_equal 1, pop_listing_ready_messages(matching: listing_id).size
   end
 end

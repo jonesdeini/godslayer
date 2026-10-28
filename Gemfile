@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 gem "dotenv-rails"
 gem "http"
+gem "bunny", "~> 3.5"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.4"

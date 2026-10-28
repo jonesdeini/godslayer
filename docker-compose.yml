@@ -15,16 +15,32 @@ services:
       timeout: 5s
       retries: 10
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    restart: unless-stopped
+    ports:
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   web:
     image: ghcr.io/jonesdeini/godslayer:latest
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
       - "3001:3000"
     environment: &app_env
       PGHOST: postgres
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       EBAY_CLIENT_ID: ${EBAY_CLIENT_ID}
       EBAY_CLIENT_SECRET: ${EBAY_CLIENT_SECRET}
@@ -62,4 +78,4 @@ services:
       - /mnt/user/godslayerrr/godslayer:/mnt/user/godslayerrr/godslayer
     working_dir: /mnt/user/godslayerrr/godslayer
     entrypoint: sh
-    command: -c 'while true; do docker compose pull --quiet web jobs postgres && docker compose up -d web jobs postgres && docker image prune -f; sleep 300; done'
+    command: -c 'while true; do docker compose pull --quiet web jobs postgres rabbitmq && docker compose up -d web jobs postgres rabbitmq && docker image prune -f; sleep 300; done'
