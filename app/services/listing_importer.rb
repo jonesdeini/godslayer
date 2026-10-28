@@ -9,7 +9,6 @@ class ListingImporter
     raw = JSON.parse raw_json
     listing_id = write_listing raw
     ListingSearchKeywordWriter.write(listing_id:, search_keyword_id:)
-    write_images listing_id, raw
     listing_id
   end
 
@@ -29,22 +28,6 @@ class ListingImporter
       url: raw["itemWebUrl"],
       raw:
     )
-  end
-
-  def write_images(listing_id, raw)
-    image_urls(raw).each_with_index do |url, position|
-      ImageWriter.write listing_id:, position:, source_url: url
-    end
-  end
-
-  def image_urls(raw)
-    urls = []
-    primary = raw.dig "image", "imageUrl"
-    urls << primary if primary
-    Array(raw["additionalImages"]).each do |image|
-      urls << image["imageUrl"] if image["imageUrl"]
-    end
-    urls
   end
 
   def price_cents(value)
