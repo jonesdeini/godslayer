@@ -39,33 +39,12 @@ class ListingImporterTest < ActiveSupport::TestCase
     assert_equal JSON.parse(REAL_SHAPED_DETAIL), listing.raw
   end
 
-  test "imports every image in order: primary first, then additionalImages" do
-    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
-
-    images = Image.where(listing_id:).order :position
-    assert_equal 3, images.size
-    assert_equal [ "https://images.example.com/primary.jpg",
-                  "https://images.example.com/second.jpg",
-                  "https://images.example.com/third.jpg" ], images.map(&:source_url)
-    assert_equal [ 0, 1, 2 ], images.map(&:position)
-  end
-
-  test "handles an item with only a primary image, no additionalImages key at all" do
-    detail = JSON.parse REAL_SHAPED_DETAIL
-    detail.delete "additionalImages"
-
-    listing_id = ListingImporter.import detail.to_json, search_keyword_id: search_keywords(:one).id
-
-    assert_equal 1, Image.where(listing_id:).count
-  end
-
   test "re-importing the same item is idempotent" do
     first_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
     second_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
     assert_equal first_id, second_id
     assert_equal 1, Listing.where(ebay_item_id: "v1|110591042924|0").count
-    assert_equal 3, Image.where(listing_id: first_id).count
   end
 
   test "records which keyword surfaced the listing" do

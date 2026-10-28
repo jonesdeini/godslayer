@@ -10,22 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_211533) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_28_002223) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-
-  create_table "images", force: :cascade do |t|
-    t.bigint "listing_id", null: false
-    t.integer "position", null: false
-    t.string "source_url", null: false
-    t.string "local_path"
-    t.string "sha256"
-    t.datetime "downloaded_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["listing_id", "position"], name: "index_images_on_listing_id_and_position", unique: true
-    t.index ["listing_id"], name: "index_images_on_listing_id"
-  end
 
   create_table "listing_search_keywords", force: :cascade do |t|
     t.bigint "listing_id", null: false
@@ -65,7 +52,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_211533) do
     t.index ["phrase"], name: "index_search_keywords_on_phrase", unique: true
   end
 
-  add_foreign_key "images", "listings", on_delete: :cascade
   add_foreign_key "listing_search_keywords", "listings"
   add_foreign_key "listing_search_keywords", "search_keywords"
 end
