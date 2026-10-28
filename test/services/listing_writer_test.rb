@@ -15,7 +15,8 @@ class ListingWriterTest < ActiveSupport::TestCase
       postal_code: "95112",
       country: "US",
       url: "https://sandbox.ebay.com/itm/110591042924",
-      raw: { "itemId" => "v1|110591042924|0" }
+      raw: { "itemId" => "v1|110591042924|0" },
+      seller_item_revision: nil
     )
 
     listing = Listing.find listing_id
@@ -27,7 +28,7 @@ class ListingWriterTest < ActiveSupport::TestCase
     assert_equal listing.first_seen_at, listing.last_seen_at
   end
 
-  test "on a repeat sighting, only updates last_seen_at, price_cents, and raw - not first_seen_at or title" do
+  test "on a repeat sighting, only updates last_seen_at, price_cents, raw, and seller_item_revision - not first_seen_at or title" do
     original_id = ListingWriter.write(
       ebay_item_id: "v1|110591042924|0",
       title: "Original Title",
@@ -39,7 +40,8 @@ class ListingWriterTest < ActiveSupport::TestCase
       postal_code: "95112",
       country: "US",
       url: "https://sandbox.ebay.com/itm/110591042924",
-      raw: { "version" => 1 }
+      raw: { "version" => 1 },
+      seller_item_revision: nil
     )
     original_first_seen_at = Listing.find(original_id).first_seen_at
 
@@ -55,13 +57,15 @@ class ListingWriterTest < ActiveSupport::TestCase
         postal_code: "95112",
         country: "US",
         url: "https://sandbox.ebay.com/itm/110591042924",
-        raw: { "version" => 2 }
+        raw: { "version" => 2 },
+        seller_item_revision: "3"
       )
 
       assert_equal original_id, updated_id
       listing = Listing.find updated_id
       assert_equal 39999, listing.price_cents
       assert_equal({ "version" => 2 }, listing.raw)
+      assert_equal "3", listing.seller_item_revision
       assert_equal original_first_seen_at.to_i, listing.first_seen_at.to_i
       assert_equal "Original Title", listing.title
       assert_equal Time.current.to_i, listing.last_seen_at.to_i

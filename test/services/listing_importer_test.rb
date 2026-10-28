@@ -52,4 +52,18 @@ class ListingImporterTest < ActiveSupport::TestCase
 
     assert ListingSearchKeyword.exists?(listing_id:, search_keyword_id: search_keywords(:one).id)
   end
+
+  test "seller_item_revision is nil when eBay doesn't send one (never-revised listing)" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    assert_nil Listing.find(listing_id).seller_item_revision
+  end
+
+  test "seller_item_revision is pulled from the detail response when present" do
+    detail = JSON.parse(REAL_SHAPED_DETAIL).merge("sellerItemRevision" => "3").to_json
+
+    listing_id = ListingImporter.import detail, search_keyword_id: search_keywords(:one).id
+
+    assert_equal "3", Listing.find(listing_id).seller_item_revision
+  end
 end

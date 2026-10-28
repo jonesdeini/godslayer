@@ -26,7 +26,8 @@ class ListingImporter
       postal_code: raw.dig("itemLocation", "postalCode"),
       country: raw.dig("itemLocation", "country"),
       url: raw["itemWebUrl"],
-      raw:
+      raw:,
+      seller_item_revision: raw["sellerItemRevision"]
     )
   end
 
