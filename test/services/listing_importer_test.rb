@@ -3,6 +3,8 @@
 require "test_helper"
 
 class ListingImporterTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   # Trimmed from a real sandbox item-detail response (2026-10-26) - same
   # field names/shapes, just with the (unrelated) 35-state tax array and
   # other noise stripped out for readability.
@@ -47,10 +49,11 @@ class ListingImporterTest < ActiveSupport::TestCase
     assert_equal 1, Listing.where(ebay_item_id: "v1|110591042924|0").count
   end
 
-  test "records which keyword surfaced the listing" do
-    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+  test "schedules a delayed job to link the listing to the keyword, rather than writing the join inline" do
+    ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
-    assert ListingSearchKeyword.exists?(listing_id:, search_keyword_id: search_keywords(:one).id)
+    assert_enqueued_with job: ListingSearchKeywordLinkJob,
+      args: [ { ebay_item_id: "v1|110591042924|0", search_keyword_id: search_keywords(:one).id } ]
   end
 
   test "seller_item_revision is nil when eBay doesn't send one (never-revised listing)" do
@@ -65,5 +68,20 @@ class ListingImporterTest < ActiveSupport::TestCase
     listing_id = ListingImporter.import detail, search_keyword_id: search_keywords(:one).id
 
     assert_equal "3", Listing.find(listing_id).seller_item_revision
+  end
+
+  test "a resweep with no real revision does not touch last_seen_at or price_cents" do
+    ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+    original_last_seen_at = Listing.find_by!(ebay_item_id: "v1|110591042924|0").last_seen_at
+
+    travel 1.hour do
+      changed_price = JSON.parse REAL_SHAPED_DETAIL
+      changed_price["price"]["value"] = "399.99"
+      ListingImporter.import changed_price.to_json, search_keyword_id: search_keywords(:one).id
+
+      listing = Listing.find_by! ebay_item_id: "v1|110591042924|0"
+      assert_equal 49999, listing.price_cents
+      assert_equal original_last_seen_at, listing.last_seen_at
+    end
   end
 end

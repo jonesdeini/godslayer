@@ -3,23 +3,22 @@
 require "test_helper"
 
 class ListingWriterTest < ActiveSupport::TestCase
-  test "creates a new listing, setting first_seen_at and last_seen_at" do
-    listing_id = ListingWriter.write(
-      ebay_item_id: "v1|110591042924|0",
-      title: "Test Laptop Computer 16GB RAM 512GB SSD",
-      price_cents: 49999,
-      currency: "USD",
-      condition: "New",
-      category_id: "177",
-      seller: "testuser_developer514",
-      postal_code: "95112",
-      country: "US",
-      url: "https://sandbox.ebay.com/itm/110591042924",
-      raw: { "itemId" => "v1|110591042924|0" },
-      seller_item_revision: nil
-    )
+  RAW = {
+    "itemId" => "v1|110591042924|0",
+    "title" => "Test Laptop Computer 16GB RAM 512GB SSD",
+    "price" => { "value" => "499.99", "currency" => "USD" },
+    "condition" => "New",
+    "categoryId" => "177",
+    "seller" => { "username" => "testuser_developer514" },
+    "itemLocation" => { "postalCode" => "95112", "country" => "US" },
+    "itemWebUrl" => "https://sandbox.ebay.com/itm/110591042924",
+    "sellerItemRevision" => nil
+  }.freeze
 
-    listing = Listing.find listing_id
+  test "builds a new, unsaved listing with first_seen_at and last_seen_at set" do
+    listing = ListingWriter.write RAW
+
+    assert listing.new_record?
     assert_equal "v1|110591042924|0", listing.ebay_item_id
     assert_equal 49999, listing.price_cents
     assert_equal "95112", listing.postal_code
@@ -28,47 +27,44 @@ class ListingWriterTest < ActiveSupport::TestCase
     assert_equal listing.first_seen_at, listing.last_seen_at
   end
 
-  test "on a repeat sighting, only updates last_seen_at, price_cents, raw, and seller_item_revision - not first_seen_at or title" do
-    original_id = ListingWriter.write(
-      ebay_item_id: "v1|110591042924|0",
-      title: "Original Title",
-      price_cents: 49999,
-      currency: "USD",
-      condition: "New",
-      category_id: "177",
-      seller: "testuser_developer514",
-      postal_code: "95112",
-      country: "US",
-      url: "https://sandbox.ebay.com/itm/110591042924",
-      raw: { "version" => 1 },
-      seller_item_revision: nil
-    )
-    original_first_seen_at = Listing.find(original_id).first_seen_at
+  test "on a repeat sighting with an unchanged seller_item_revision, leaves the existing listing untouched" do
+    original = ListingWriter.write RAW
+    original.save!
+    original_last_seen_at = original.last_seen_at
 
     travel 1.hour do
-      updated_id = ListingWriter.write(
-        ebay_item_id: "v1|110591042924|0",
-        title: "Changed Title - should NOT be saved",
-        price_cents: 39999,
-        currency: "USD",
-        condition: "New",
-        category_id: "177",
-        seller: "testuser_developer514",
-        postal_code: "95112",
-        country: "US",
-        url: "https://sandbox.ebay.com/itm/110591042924",
-        raw: { "version" => 2 },
-        seller_item_revision: "3"
-      )
+      resweep = ListingWriter.write RAW.merge("title" => "Different title, same revision", "price" => { "value" => "399.99", "currency" => "USD" })
 
-      assert_equal original_id, updated_id
-      listing = Listing.find updated_id
-      assert_equal 39999, listing.price_cents
-      assert_equal({ "version" => 2 }, listing.raw)
-      assert_equal "3", listing.seller_item_revision
-      assert_equal original_first_seen_at.to_i, listing.first_seen_at.to_i
-      assert_equal "Original Title", listing.title
-      assert_equal Time.current.to_i, listing.last_seen_at.to_i
+      refute resweep.new_record?
+      refute resweep.changed?
+      assert_equal original.id, resweep.id
+      assert_equal "Test Laptop Computer 16GB RAM 512GB SSD", resweep.title
+      assert_equal 49999, resweep.price_cents
+      assert_equal original_last_seen_at, resweep.last_seen_at
+    end
+  end
+
+  test "on a repeat sighting with a changed seller_item_revision, reassigns content and refreshes last_seen_at" do
+    original = ListingWriter.write RAW
+    original.save!
+    original_first_seen_at = original.first_seen_at
+
+    travel 1.hour do
+      revised_raw = RAW.merge(
+        "title" => "Changed Title",
+        "price" => { "value" => "399.99", "currency" => "USD" },
+        "sellerItemRevision" => "3"
+      )
+      resweep = ListingWriter.write revised_raw
+
+      refute resweep.new_record?
+      assert resweep.changed?
+      assert_equal original.id, resweep.id
+      assert_equal "Changed Title", resweep.title
+      assert_equal 39999, resweep.price_cents
+      assert_equal "3", resweep.seller_item_revision
+      assert_equal original_first_seen_at.to_i, resweep.first_seen_at.to_i
+      assert_equal Time.current.to_i, resweep.last_seen_at.to_i
     end
   end
 end
