@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class SweepSchedulerJob < ApplicationJob
-  queue_as :default
+  queue_as :enqueuing
 
   def perform
     SearchKeyword.where(active: true).find_each do |keyword|

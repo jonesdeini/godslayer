@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class KeywordSweepJob < ApplicationJob
-  queue_as :default
+  queue_as :sweep
 
   def perform(keyword)
     search_results = JSON.parse Ebay::Search.keyword(keyword.phrase)
