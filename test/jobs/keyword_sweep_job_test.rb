@@ -28,8 +28,10 @@ class KeywordSweepJobTest < ActiveJob::TestCase
     assert Listing.exists?(ebay_item_id: "v1|111|0")
     assert Listing.exists?(ebay_item_id: "v1|222|0")
 
-    listing = Listing.find_by ebay_item_id: "v1|111|0"
-    assert ListingSearchKeyword.exists?(listing_id: listing.id, search_keyword_id: search_keywords(:one).id)
+    assert_enqueued_with job: ListingSearchKeywordLinkJob,
+      args: [ { ebay_item_id: "v1|111|0", search_keyword_id: search_keywords(:one).id } ]
+    assert_enqueued_with job: ListingSearchKeywordLinkJob,
+      args: [ { ebay_item_id: "v1|222|0", search_keyword_id: search_keywords(:one).id } ]
   end
 
   test "skips an item whose detail fetch fails, without losing the others" do
