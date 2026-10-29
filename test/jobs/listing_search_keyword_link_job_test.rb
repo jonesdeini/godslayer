@@ -4,7 +4,7 @@ require "test_helper"
 
 class ListingSearchKeywordLinkJobTest < ActiveJob::TestCase
   test "links the listing to the keyword once the listing exists" do
-    listing = ListingWriter.write(
+    listing = Listing.from_ebay_json(
       "itemId" => "v1|110591042924|0",
       "title" => "Test Laptop",
       "price" => { "value" => "499.99", "currency" => "USD" },
@@ -18,7 +18,7 @@ class ListingSearchKeywordLinkJobTest < ActiveJob::TestCase
   end
 
   test "writing the same pairing twice doesn't create a duplicate row" do
-    listing = ListingWriter.write(
+    listing = Listing.from_ebay_json(
       "itemId" => "v1|110591042924|0",
       "title" => "Test Laptop",
       "price" => { "value" => "499.99", "currency" => "USD" },

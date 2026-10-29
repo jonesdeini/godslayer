@@ -9,7 +9,9 @@ class ListingImporter
     raw = JSON.parse raw_json
     ListingSearchKeywordLinkJob.set(wait: 1.minute).perform_later(ebay_item_id: raw.fetch("itemId"), search_keyword_id:)
 
-    listing = ListingWriter.write raw
+    listing = Listing.from_ebay_json raw
+    return listing.id unless listing.new_record? || listing.seller_item_revision_changed?
+
     listing.save!
     listing.id
   end
