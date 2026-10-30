@@ -40,6 +40,13 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "not found", JSON.parse(response.body)["error"]
   end
 
+  test "renders a JSON 404 for a malformed id, instead of a 500" do
+    get api_listing_path("not-a-number")
+
+    assert_response :not_found
+    assert_equal "not found", JSON.parse(response.body)["error"]
+  end
+
   test "does not reject a non-browser client the way the HTML app would" do
     listing = Listing.create!(
       ebay_item_id: "v1|999|0",
