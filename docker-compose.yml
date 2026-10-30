@@ -18,6 +18,9 @@ services:
   rabbitmq:
     image: rabbitmq:4-management
     restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - "15672:15672"
     volumes:
@@ -40,7 +43,7 @@ services:
       - "3001:3000"
     environment: &app_env
       PGHOST: postgres
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       EBAY_CLIENT_ID: ${EBAY_CLIENT_ID}
       EBAY_CLIENT_SECRET: ${EBAY_CLIENT_SECRET}
