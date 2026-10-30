@@ -14,6 +14,7 @@ class ListingImporterTest < ActiveSupport::TestCase
     "price" => { "value" => "499.99", "currency" => "USD" },
     "condition" => "New",
     "categoryId" => "177",
+    "categoryPath" => "Computers/Tablets & Networking|Laptops & Netbooks|PC Laptops & Netbooks",
     "itemLocation" => { "city" => "San Jose", "stateOrProvince" => "California", "postalCode" => "951**", "country" => "US" },
     "image" => { "imageUrl" => "https://images.example.com/primary.jpg" },
     "additionalImages" => [
@@ -22,6 +23,8 @@ class ListingImporterTest < ActiveSupport::TestCase
     ],
     "seller" => { "username" => "testuser_developer514", "feedbackScore" => 1000 },
     "itemWebUrl" => "https://sandbox.ebay.com/itm/Test-Laptop/110591042924",
+    "buyingOptions" => [ "FIXED_PRICE", "BEST_OFFER" ],
+    "description" => "<p>A laptop.</p>",
     "localizedAspects" => [
       { "type" => "STRING", "name" => "Processor", "value" => "Intel Core i5" },
       { "type" => "STRING", "name" => "RAM Size", "value" => "16 GB" }
@@ -96,5 +99,26 @@ class ListingImporterTest < ActiveSupport::TestCase
     ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
     assert_equal [ { "listing_id" => listing_id } ], published_listing_ready_messages
+  end
+
+  test "pulls category_path and the buying-option flags straight from the detail response" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    listing = Listing.find listing_id
+    assert_equal "Computers/Tablets & Networking|Laptops & Netbooks|PC Laptops & Netbooks", listing.category_path
+    assert listing.fixed_price
+    assert_not listing.auction
+    assert listing.best_offer
+  end
+
+  test "description and localized_aspects derive from raw" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    listing = Listing.find listing_id
+    assert_equal "<p>A laptop.</p>", listing.description
+    assert_equal [
+      { "type" => "STRING", "name" => "Processor", "value" => "Intel Core i5" },
+      { "type" => "STRING", "name" => "RAM Size", "value" => "16 GB" }
+    ], listing.localized_aspects
   end
 end

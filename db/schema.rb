@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_142854) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_173849) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -41,6 +41,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_142854) do
     t.string "postal_code"
     t.string "country"
     t.string "seller_item_revision"
+    t.string "category_path"
+    t.boolean "fixed_price", default: false, null: false
+    t.boolean "auction", default: false, null: false
+    t.boolean "best_offer", default: false, null: false
     t.index ["ebay_item_id"], name: "index_listings_on_ebay_item_id", unique: true
   end
 
