@@ -17,7 +17,7 @@ uv run godslayer-ml
 
 ## Test
 
-Needs a real RabbitMQ broker reachable at `RABBITMQ_URL` (defaults to `amqp://guest:guest@localhost:5672`) - tests run against it for real, not mocked, same as the Rails side.
+No broker needed - `handle_message` is tested with a mocked channel, same reasoning as the Rails side's switch to `bunny-mock` (no per-test isolation for an external queue, and little broker-specific behavior worth a live dependency for this thin a wrapper).
 
 ```
 uv run pytest
