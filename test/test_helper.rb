@@ -7,6 +7,8 @@ require "webmock/minitest"
 
 WebMock.disable_net_connect! allow_localhost: true
 
+Dir[Rails.root.join("test/support/**/*.rb")].each { |f| require f }
+
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
@@ -20,32 +22,16 @@ module ActiveSupport
     # token cached by one test leaks into another's assertions.
     setup { Ebay::Authenticator.reset! }
 
-    # Unlike Postgres, RabbitMQ isn't wrapped in a per-test transaction that
-    # rolls back automatically - tests that touch it call these explicitly.
-    def purge_listing_ready_queue
-      with_listing_ready_queue(&:purge)
-    end
+    setup { Bunny.test_session = nil }
 
-    def pop_listing_ready_messages(matching:)
-      found = []
-      with_listing_ready_queue do |queue|
-        loop do
-          _delivery_info, _properties, payload = queue.pop
-          break if payload.nil?
-          parsed = ::JSON.parse payload
-          found << parsed if parsed["listing_id"] == matching
-        end
+    def published_listing_ready_messages
+      queue = Bunny.test_session&.queues&.[]("listing_ready")
+      return [] unless queue
+
+      Array.new queue.message_count do
+        _delivery_info, _properties, payload = queue.pop
+        ::JSON.parse payload
       end
-      found
-    end
-
-    def with_listing_ready_queue
-      connection = Bunny.new Rails.application.config.x.rabbitmq.url
-      connection.start
-      channel = connection.create_channel
-      yield channel.queue("listing_ready", durable: true)
-    ensure
-      connection&.close
     end
   end
 end

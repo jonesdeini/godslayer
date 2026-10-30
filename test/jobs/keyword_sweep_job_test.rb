@@ -4,8 +4,6 @@ require "test_helper"
 
 class KeywordSweepJobTest < ActiveJob::TestCase
   setup do
-    purge_listing_ready_queue
-
     stub_request(:post, "https://api.ebay.com/identity/v1/oauth2/token")
       .to_return(status: 200, body: { access_token: "fake-token", expires_in: 7200 }.to_json)
   end

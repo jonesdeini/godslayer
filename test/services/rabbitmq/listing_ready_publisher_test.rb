@@ -3,12 +3,9 @@
 require "test_helper"
 
 class Rabbitmq::ListingReadyPublisherTest < ActiveSupport::TestCase
-  setup { purge_listing_ready_queue }
-
-  test "publishes a message carrying the listing id, for real, against a live broker" do
+  test "publishes a message carrying the listing id" do
     Rabbitmq::ListingReadyPublisher.publish listing_id: 999_001
 
-    messages = pop_listing_ready_messages matching: 999_001
-    assert_equal 1, messages.size
+    assert_equal [ { "listing_id" => 999_001 } ], published_listing_ready_messages
   end
 end
