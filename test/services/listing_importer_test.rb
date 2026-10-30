@@ -84,4 +84,17 @@ class ListingImporterTest < ActiveSupport::TestCase
       assert_equal original_last_seen_at, listing.last_seen_at
     end
   end
+
+  test "publishes a listing_ready message for a brand new listing" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    assert_equal [ { "listing_id" => listing_id } ], published_listing_ready_messages
+  end
+
+  test "does not publish again when the same listing is re-swept" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+    ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+
+    assert_equal [ { "listing_id" => listing_id } ], published_listing_ready_messages
+  end
 end

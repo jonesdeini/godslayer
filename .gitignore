@@ -32,3 +32,4 @@
 
 # docker-compose's local postgres data volume (bind-mounted, not a real backup).
 /postgres_data
+/rabbitmq_data

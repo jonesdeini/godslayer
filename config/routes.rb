@@ -14,4 +14,8 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   resources :search_keywords, except: [ :destroy ]
+
+  namespace :api do
+    resources :listings, only: [ :show ]
+  end
 end
