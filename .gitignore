@@ -11,6 +11,9 @@
 # is covered automatically.
 /secret_sauce/
 
+# Same reason - a fully worked example of the exact signal being hunted for.
+/motivating-example.md
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
