@@ -37,3 +37,10 @@
 /postgres_data
 /rabbitmq_data
 /storage_data
+
+# ml/'s real secrets/local overrides, same reason as the root /.env above.
+/ml/.env
+
+# Python bytecode/test cache - ml/'s .venv ignores itself via its own .gitignore.
+__pycache__/
+.pytest_cache/
