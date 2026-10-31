@@ -16,3 +16,6 @@ production:
   sweep_scheduler:
     class: SweepSchedulerJob
     schedule: every hour
+  publish_ready_listings:
+    class: PublishReadyListingsJob
+    schedule: every 5 minutes

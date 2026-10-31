@@ -3,7 +3,7 @@
 require "test_helper"
 
 class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
-  test "returns a listing as JSON, including derived image URLs" do
+  test "returns a listing as JSON, including attached image urls" do
     listing = Listing.create!(
       ebay_item_id: "v1|110591042924|0",
       title: "Test Laptop Computer 16GB RAM 512GB SSD",
@@ -23,12 +23,14 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
       first_seen_at: Time.current,
       last_seen_at: Time.current,
       raw: {
-        "image" => { "imageUrl" => "https://images.example.com/primary.jpg" },
-        "additionalImages" => [ { "imageUrl" => "https://images.example.com/second.jpg" } ],
         "description" => "<p>A laptop.</p>",
         "localizedAspects" => [ { "type" => "STRING", "name" => "RAM Size", "value" => "16 GB" } ]
       }
     )
+    primary = listing.listing_images.create! source_url: "https://images.example.com/primary.jpg"
+    primary.file.attach io: StringIO.new("fake-primary-bytes"), filename: "primary.jpg", content_type: "image/jpeg"
+    second = listing.listing_images.create! source_url: "https://images.example.com/second.jpg"
+    second.file.attach io: StringIO.new("fake-second-bytes"), filename: "second.jpg", content_type: "image/jpeg"
 
     get api_listing_path(listing)
 
@@ -36,8 +38,10 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     body = JSON.parse response.body
     assert_equal "v1|110591042924|0", body["ebay_item_id"]
     assert_equal 49999, body["price_cents"]
-    assert_equal "https://images.example.com/primary.jpg", body["primary_image_url"]
-    assert_equal [ "https://images.example.com/second.jpg" ], body["additional_image_urls"]
+    assert_equal 2, body["images"].size
+    assert_equal listing.listing_images.map(&:id), body["images"].map { |image| image["id"] }
+    body["images"].each { |image| assert_match %r{/rails/active_storage/blobs/}, image["url"] }
+    assert_not_equal body["images"].first["url"], body["images"].second["url"]
     assert_equal "Computers/Tablets & Networking|Laptops & Netbooks|PC Laptops & Netbooks", body["category_path"]
     assert_equal "3", body["seller_item_revision"]
     assert_equal true, body["fixed_price"]
@@ -45,6 +49,25 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal true, body["best_offer"]
     assert_equal "<p>A laptop.</p>", body["description"]
     assert_equal [ { "type" => "STRING", "name" => "RAM Size", "value" => "16 GB" } ], body["localized_aspects"]
+  end
+
+  test "returns an empty images array when no images have been downloaded yet" do
+    listing = Listing.create!(
+      ebay_item_id: "v1|no-images|0",
+      title: "No Images Yet",
+      price_cents: 1000,
+      currency: "USD",
+      url: "https://sandbox.ebay.com/itm/no-images",
+      first_seen_at: Time.current,
+      last_seen_at: Time.current,
+      raw: {}
+    )
+
+    get api_listing_path(listing)
+
+    assert_response :success
+    body = JSON.parse response.body
+    assert_equal [], body["images"]
   end
 
   test "renders a JSON 404 for an unknown listing" do
