@@ -10,6 +10,9 @@
 # Same reason - the real target vendor/model/chip research.
 /target-hardware.md
 
+# Same reason - a fully worked example of the exact signal being hunted for.
+/motivating-example.md
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
@@ -34,3 +37,10 @@
 /postgres_data
 /rabbitmq_data
 /storage_data
+
+# ml/'s real secrets/local overrides, same reason as the root /.env above.
+/ml/.env
+
+# Python bytecode/test cache - ml/'s .venv ignores itself via its own .gitignore.
+__pycache__/
+.pytest_cache/
