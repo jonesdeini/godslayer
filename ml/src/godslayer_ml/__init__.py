@@ -9,4 +9,4 @@ from godslayer_ml.consumer import run
 def main() -> None:
     load_dotenv()
     logging.basicConfig(level=logging.INFO)
-    run(os.environ["RABBITMQ_URL"])
+    run(os.environ["RABBITMQ_URL"], os.environ.get("GODSLAYER_API_URL", "http://localhost:3000"))
