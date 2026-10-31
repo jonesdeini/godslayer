@@ -1,8 +1,10 @@
 # godslayer-ml
 
-The Python consumer side of godslayer. Consumes `{listing_id}` messages off RabbitMQ's `listing_ready` queue, published by the Rails app whenever a genuinely new listing gets imported. See the root `CLAUDE.md` and `docs/python-consumer.md` for the full design context - this is step 1 of that pipeline only: connect and consume, nothing else yet.
+The Python consumer side of godslayer. Consumes `{listing_id}` messages off RabbitMQ's `listing_ready` queue, published by the Rails app once a listing's images are downloaded, fetches the listing's data (including image URLs) from the Rails read API, downloads each image, and runs it through Tesseract OCR. See the root `CLAUDE.md` and `docs/python-consumer.md` for the full design context - no comparison/determination logic yet, this just logs what OCR finds.
 
 ## Setup
+
+Needs the real Tesseract binary installed separately (`pytesseract` is just a wrapper around it) - e.g. `apt install tesseract-ocr` / `brew install tesseract`.
 
 ```
 cp .env.example .env
