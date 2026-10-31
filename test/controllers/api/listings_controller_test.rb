@@ -40,7 +40,7 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 49999, body["price_cents"]
     assert_equal 2, body["images"].size
     assert_equal listing.listing_images.map(&:id), body["images"].map { |image| image["id"] }
-    body["images"].each { |image| assert_match %r{/rails/active_storage/blobs/}, image["url"] }
+    body["images"].each { |image| assert_match %r{\Ahttp://[^/]+/rails/active_storage/blobs/}, image["url"] }
     assert_not_equal body["images"].first["url"], body["images"].second["url"]
     assert_equal "Computers/Tablets & Networking|Laptops & Netbooks|PC Laptops & Netbooks", body["category_path"]
     assert_equal "3", body["seller_item_revision"]
