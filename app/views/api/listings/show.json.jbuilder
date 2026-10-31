@@ -6,5 +6,5 @@ json.description listing.description
 json.localized_aspects listing.localized_aspects
 json.images listing.listing_images do |listing_image|
   json.id listing_image.id
-  json.url url_for(listing_image.file)
+  json.url rails_blob_url(listing_image.file)
 end
