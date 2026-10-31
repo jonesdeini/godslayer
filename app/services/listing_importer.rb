@@ -10,11 +10,11 @@ class ListingImporter
     ListingSearchKeywordLinkJob.set(wait: 1.minute).perform_later(ebay_item_id: raw.fetch("itemId"), search_keyword_id:)
 
     listing = Listing.from_ebay_json raw
-    new_listing = listing.new_record?
-    return listing.id unless new_listing || listing.seller_item_revision_changed?
+    return listing.id unless listing.new_record? || listing.seller_item_revision_changed?
 
+    listing.published_at = nil
     listing.save!
-    Rabbitmq::ListingReadyPublisher.publish listing_id: listing.id if new_listing
+    ListingImageDownloadJob.perform_later listing.id
     listing.id
   end
 end

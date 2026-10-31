@@ -88,17 +88,37 @@ class ListingImporterTest < ActiveSupport::TestCase
     end
   end
 
-  test "publishes a listing_ready message for a brand new listing" do
+  test "schedules the image download job for a brand new listing" do
     listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
-    assert_equal [ { "listing_id" => listing_id } ], published_listing_ready_messages
+    assert_enqueued_with job: ListingImageDownloadJob, args: [ listing_id ]
   end
 
-  test "does not publish again when the same listing is re-swept" do
+  test "does not re-schedule the image download job when re-swept with no real revision" do
     listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
-    ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
-    assert_equal [ { "listing_id" => listing_id } ], published_listing_ready_messages
+    assert_no_enqueued_jobs only: ListingImageDownloadJob do
+      ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+    end
+  end
+
+  test "re-schedules the image download job when a real revision comes in" do
+    ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+    revised = JSON.parse(REAL_SHAPED_DETAIL).merge("sellerItemRevision" => "2").to_json
+
+    listing_id = ListingImporter.import revised, search_keyword_id: search_keywords(:one).id
+
+    assert_enqueued_with job: ListingImageDownloadJob, args: [ listing_id ]
+  end
+
+  test "resets published_at when a real revision comes in, so the listing is picked up for republishing" do
+    listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
+    Listing.find(listing_id).update! published_at: Time.current
+    revised = JSON.parse(REAL_SHAPED_DETAIL).merge("sellerItemRevision" => "2").to_json
+
+    ListingImporter.import revised, search_keyword_id: search_keywords(:one).id
+
+    assert_nil Listing.find(listing_id).published_at
   end
 
   test "pulls category_path and the buying-option flags straight from the detail response" do

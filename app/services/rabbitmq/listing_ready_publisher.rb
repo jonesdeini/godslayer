@@ -4,14 +4,13 @@ module Rabbitmq
   class ListingReadyPublisher
     QUEUE_NAME = "listing_ready"
 
-    def self.publish(listing_id:)
-      new.publish listing_id:
-    end
-
-    def publish(listing_id:)
+    def publish_batch(listings)
       with_channel do |channel|
         queue = channel.queue QUEUE_NAME, durable: true
-        queue.publish({ listing_id: }.to_json, persistent: true)
+        listings.each do |listing|
+          queue.publish({ listing_id: listing.id }.to_json, persistent: true)
+          yield listing
+        end
       end
     end
 

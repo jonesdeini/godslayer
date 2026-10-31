@@ -41,6 +41,8 @@ services:
         condition: service_healthy
     ports:
       - "3001:3000"
+    volumes:
+      - ./storage_data:/rails/storage
     environment: &app_env
       PGHOST: postgres
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
@@ -64,6 +66,8 @@ services:
     depends_on:
       web:
         condition: service_healthy
+    volumes:
+      - ./storage_data:/rails/storage
     environment: *app_env
 
   # Poll-based deploy: no inbound access to this box needed, GitHub never

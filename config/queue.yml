@@ -15,6 +15,14 @@ default: &default
       threads: 1
       processes: 1
       polling_interval: 1
+    - queues: "image_downloads"
+      threads: 2
+      processes: 1
+      polling_interval: 1
+    - queues: "publishing"
+      threads: 1
+      processes: 1
+      polling_interval: 1
 
 development:
   <<: *default
