@@ -37,6 +37,22 @@ services:
     volumes:
       - ./ollama_data:/root/.ollama
 
+  # One-shot: waits for ollama's API, pulls the model the ml consumer
+  # expects, then exits. Without this, a fresh ollama container has no
+  # models loaded and every determination would fail until someone pulled
+  # one by hand - ml would crash-loop (via restart: unless-stopped) until
+  # that happened, since a missing model isn't caught anywhere and the
+  # message is never acked, so RabbitMQ keeps redelivering it.
+  ollama-init:
+    image: ollama/ollama
+    restart: "no"
+    depends_on:
+      ollama:
+        condition: service_started
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: [ "sh", "-c", "until ollama list >/dev/null 2>&1; do sleep 2; done; ollama pull qwen2.5:14b" ]
+
   web:
     image: ghcr.io/jonesdeini/godslayer:latest
     restart: unless-stopped
@@ -84,8 +100,8 @@ services:
         condition: service_healthy
       web:
         condition: service_healthy
-      ollama:
-        condition: service_started
+      ollama-init:
+        condition: service_completed_successfully
     environment:
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       GODSLAYER_API_URL: http://web:3000
