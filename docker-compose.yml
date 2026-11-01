@@ -31,6 +31,12 @@ services:
       timeout: 5s
       retries: 10
 
+  ollama:
+    image: ollama/ollama
+    restart: unless-stopped
+    volumes:
+      - ./ollama_data:/root/.ollama
+
   web:
     image: ghcr.io/jonesdeini/godslayer:latest
     restart: unless-stopped
@@ -70,6 +76,21 @@ services:
       - ./storage_data:/rails/storage
     environment: *app_env
 
+  ml:
+    image: ghcr.io/jonesdeini/godslayer-ml:latest
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      GODSLAYER_API_URL: http://web:3000
+      OLLAMA_URL: http://ollama:11434
+
   # Poll-based deploy: no inbound access to this box needed, GitHub never
   # executes anything here, it just gets pulled from. See reef-1000's
   # CLAUDE.md ("Deploying") for the full reasoning this mirrors.
@@ -85,4 +106,6 @@ services:
       - /mnt/user/godslayerrr/godslayer:/mnt/user/godslayerrr/godslayer
     working_dir: /mnt/user/godslayerrr/godslayer
     entrypoint: sh
-    command: -c 'while true; do docker compose pull --quiet web jobs postgres rabbitmq && docker compose up -d web jobs postgres rabbitmq && docker image prune -f; sleep 300; done'
+    # ollama isn't pulled automatically - it's not our image and doesn't
+    # need frequent updates, just `docker compose pull ollama` once by hand.
+    command: -c 'while true; do docker compose pull --quiet web jobs ml postgres rabbitmq && docker compose up -d web jobs ml ollama postgres rabbitmq && docker image prune -f; sleep 300; done'
