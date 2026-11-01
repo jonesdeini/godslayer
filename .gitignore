@@ -4,11 +4,12 @@
 # Real secrets/local overrides. .env.example and .env.test are tracked on purpose.
 /.env
 
-# The real search_keywords list (models/exclude phrases) - not for the public repo.
-/search_terms.json
-
-# Same reason - the real target vendor/model/chip research.
-/target-hardware.md
+# Everything that's genuinely "the sauce" - specific research, strategy,
+# and real-world examples that would hand a competitor the project's actual
+# edge for free. Synced between machines via Syncthing, not git. One
+# directory-level ignore instead of per-file, so a new file dropped in here
+# is covered automatically.
+/secret_sauce/
 
 # Ignore all logfiles and tempfiles.
 /log/*
