@@ -8,10 +8,14 @@ Dense working notes, kept separate from `CLAUDE.md` for the same reason as `ebay
 2. `GET /api/listings/:id` → metadata + image URLs. **Built.**
 3. Download the images. **Built.**
 4. Photo-sort — classify which photos are useful (BIOS/iLO screen, DIMM label vs. box art) — no value judgment yet, per `CLAUDE.md`'s funnel-stages note. **Collapsed into extraction for the current MVP** - see `mvp-strategy.md` (gitignored) for why a separate classification pass isn't built.
-5. Extract — read the actual specs off the useful photos. **A first pass built:** OCR (`pytesseract`, the real Tesseract binary) on every downloaded image, logged - not yet comparing against the listing's claimed spec or producing a real determination. See `mvp-strategy.md` for the reframe this follows (inconsistency detection, not general extraction) and the open questions it hasn't answered yet (comparison tolerance, the three-state match/mismatch/no-evidence output).
+5. Extract — read the actual specs off the useful photos. **OCR pass built** (`pytesseract`, the real Tesseract binary) on every downloaded image, logged. **Comparison/determination logic validated but not yet built into the pipeline** - see `mvp-strategy.md` for the approach (a local LLM distills structured claims from the listing text and separately from the OCR text into a shared schema, then plain code does the actual comparison) and why an end-to-end "one model call does extraction and comparison together" approach didn't work reliably.
 6. Write the determination back to Rails. **Not built** - still genuinely open, see `CLAUDE.md`.
 
 Verified end-to-end against real services (2026-10-31): a real RabbitMQ message → real `GET /api/listings/:id` call → a real downloaded image → real Tesseract OCR output. Found and fixed a real bug this way - the API was handing out relative, not absolute, blob URLs (see git history / PR for `app/views/api/listings/show.json.jbuilder`).
+
+## Comparison step - general shape (specifics in `mvp-strategy.md`)
+
+The determination step splits across two tools, each used for what it's actually reliable at: a local LLM (via Ollama) handles fuzzy text extraction/normalization (robust to OCR noise and varied listing phrasing), and plain deterministic code handles unit conversion and threshold comparison (no LLM arithmetic). Local-only, not a hosted API - a real cost constraint for this project, not a style choice. Model/schema/hardware specifics are in the gitignored strategy doc.
 
 ## Concurrency - reasoning so far, not yet built against
 
