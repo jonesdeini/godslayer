@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class SearchKeywordSeeder
-  DEFAULT_PATH = Rails.root.join "search_terms.json"
+  DEFAULT_PATH = Rails.root.join "secret_sauce", "search_terms.json"
 
   def self.seed(path: DEFAULT_PATH)
     new(path).seed
