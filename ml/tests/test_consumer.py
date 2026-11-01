@@ -10,8 +10,10 @@ def test_handle_message_parses_the_listing_id_processes_it_and_acks():
     body = json.dumps({"listing_id": 42}).encode()
 
     with patch("godslayer_ml.consumer.process_listing") as process_listing:
-        listing_id = handle_message(channel, method, None, body, api_base_url="http://api.example.com")
+        listing_id = handle_message(
+            channel, method, None, body, api_base_url="http://api.example.com", ollama_url="http://ollama.example.com"
+        )
 
     assert listing_id == 42
-    process_listing.assert_called_once_with(42, "http://api.example.com")
+    process_listing.assert_called_once_with(42, "http://api.example.com", "http://ollama.example.com")
     channel.basic_ack.assert_called_once_with(delivery_tag=1)
