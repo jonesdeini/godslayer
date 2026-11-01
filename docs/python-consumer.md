@@ -8,8 +8,8 @@ Dense working notes, kept separate from `CLAUDE.md` for the same reason as `ebay
 2. `GET /api/listings/:id` → metadata + image URLs. **Built.**
 3. Download the images. **Built.**
 4. Photo-sort — classify which photos are useful (BIOS/iLO screen, DIMM label vs. box art) — no value judgment yet, per `CLAUDE.md`'s funnel-stages note. **Collapsed into extraction for the current MVP** - see `secret_sauce/mvp-strategy.md` (gitignored) for why a separate classification pass isn't built.
-5. Extract — read the actual specs off the useful photos. **OCR pass built** (`pytesseract`, the real Tesseract binary) on every downloaded image, logged. **Comparison/determination logic validated but not yet built into the pipeline** - see `secret_sauce/mvp-strategy.md` for the approach (a local LLM distills structured claims from the listing text and separately from the OCR text into a shared schema, then plain code does the actual comparison) and why an end-to-end "one model call does extraction and comparison together" approach didn't work reliably.
-6. Write the determination back to Rails. **Not built** - still genuinely open, see `CLAUDE.md`.
+5. Extract — read the actual specs off the useful photos, compare against the claim. **Built** (a local LLM distills structured claims from the listing text and separately from the OCR text into a shared schema, then plain code does the actual comparison) - see `secret_sauce/mvp-strategy.md` for why an end-to-end "one model call does extraction and comparison together" approach didn't work reliably.
+6. Write the determination back to Rails via `POST /api/listings/:id/determinations`. **Built** - see `CLAUDE.md`'s determinations entry for the settled write-back shape (append-only, `active` flag, raw value+unit pairs, `listing_image_id` pointing at whichever image produced the hit).
 
 Verified end-to-end against real services (2026-10-31): a real RabbitMQ message → real `GET /api/listings/:id` call → a real downloaded image → real Tesseract OCR output. Found and fixed a real bug this way - the API was handing out relative, not absolute, blob URLs (see git history / PR for `app/views/api/listings/show.json.jbuilder`).
 

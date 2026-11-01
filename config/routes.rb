@@ -16,6 +16,8 @@ Rails.application.routes.draw do
   resources :search_keywords, except: [ :destroy ]
 
   namespace :api, defaults: { format: :json } do
-    resources :listings, only: [ :show ]
+    resources :listings, only: [ :show ] do
+      resources :determinations, only: [ :create ]
+    end
   end
 end
