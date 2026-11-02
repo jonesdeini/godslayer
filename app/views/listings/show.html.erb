@@ -1,0 +1,22 @@
+<h1><%= listing.title %></h1>
+
+<p><%= link_to "View on eBay", listing.ebay_url, target: "_blank", rel: "noopener" if listing.ebay_url %></p>
+<p>Price: <%= number_to_currency(listing.price_cents / 100.0) %></p>
+<p>Condition: <%= listing.condition %></p>
+
+<h2>RAM determination</h2>
+<% if determination %>
+  <p>Verdict: <%= determination.verdict %></p>
+  <p>Claimed: <%= determination.claimed_value %> <%= determination.claimed_unit %></p>
+  <p>Photo: <%= determination.photo_value %> <%= determination.photo_unit %></p>
+  <% if determination.listing_image %>
+    <%= image_tag rails_blob_url(determination.listing_image.file), width: 400 %>
+  <% end %>
+<% else %>
+  <p>Pending - not processed yet.</p>
+<% end %>
+
+<h2>Images</h2>
+<% listing.listing_images.each do |listing_image| %>
+  <%= image_tag rails_blob_url(listing_image.file), width: 200 %>
+<% end %>
