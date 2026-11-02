@@ -1,9 +1,17 @@
 import json
+import signal
 from unittest.mock import Mock, patch
 
 import requests
 
-from godslayer_ml.consumer import DEAD_QUEUE_NAME, MAX_ATTEMPTS, handle_message, is_permanent_failure
+from godslayer_ml.consumer import (
+    DEAD_QUEUE_NAME,
+    MAX_ATTEMPTS,
+    handle_message,
+    is_permanent_failure,
+    run,
+    stop_consuming_on_signal,
+)
 
 
 def test_handle_message_parses_the_listing_id_processes_it_and_acks():
@@ -102,3 +110,31 @@ def test_is_permanent_failure_treats_5xx_and_other_exceptions_as_retryable():
     assert not is_permanent_failure(server_error)
     assert not is_permanent_failure(ConnectionError("web unreachable"))
     assert not is_permanent_failure(KeyError("ram_value"))
+
+
+def test_stop_consuming_on_signal_stops_the_channel_without_raising():
+    channel = Mock()
+    handler = stop_consuming_on_signal(channel)
+
+    handler(signal.SIGTERM, None)
+
+    channel.stop_consuming.assert_called_once()
+
+
+def test_run_registers_sigterm_and_sigint_to_stop_consuming_gracefully():
+    connection = Mock()
+    channel = Mock()
+    connection.channel.return_value = channel
+
+    with (
+        patch("godslayer_ml.consumer.connect", return_value=connection),
+        patch("godslayer_ml.consumer.signal.signal") as signal_signal,
+    ):
+        run("amqp://example.com", "http://api.example.com", "http://ollama.example.com")
+
+    registered = {call.args[0] for call in signal_signal.call_args_list}
+    assert registered == {signal.SIGTERM, signal.SIGINT}
+
+    handler = signal_signal.call_args_list[0].args[1]
+    handler(signal.SIGTERM, None)
+    channel.stop_consuming.assert_called_once()

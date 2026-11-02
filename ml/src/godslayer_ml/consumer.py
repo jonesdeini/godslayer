@@ -1,5 +1,6 @@
 import json
 import logging
+import signal
 from functools import partial
 
 import pika
@@ -52,6 +53,14 @@ def handle_message(channel, method, properties, body, api_base_url: str, ollama_
     return listing_id
 
 
+def stop_consuming_on_signal(channel):
+    def handler(signum, frame):
+        logger.info("received signal %s, finishing the in-flight message then stopping", signum)
+        channel.stop_consuming()
+
+    return handler
+
+
 def run(amqp_url: str, api_base_url: str, ollama_url: str) -> None:
     connection = connect(amqp_url)
     channel = connection.channel()
@@ -59,6 +68,10 @@ def run(amqp_url: str, api_base_url: str, ollama_url: str) -> None:
     channel.queue_declare(queue=DEAD_QUEUE_NAME, durable=True)
     on_message = partial(handle_message, api_base_url=api_base_url, ollama_url=ollama_url)
     channel.basic_consume(queue=QUEUE_NAME, on_message_callback=on_message)
+
+    handler = stop_consuming_on_signal(channel)
+    signal.signal(signal.SIGTERM, handler)
+    signal.signal(signal.SIGINT, handler)
 
     try:
         channel.start_consuming()
