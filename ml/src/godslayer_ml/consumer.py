@@ -18,7 +18,10 @@ def connect(amqp_url: str) -> pika.BlockingConnection:
 def handle_message(channel, method, properties, body, api_base_url: str, ollama_url: str) -> int:
     listing_id = json.loads(body)["listing_id"]
     logger.info("received listing_ready for listing_id=%s", listing_id)
-    process_listing(listing_id, api_base_url, ollama_url)
+    try:
+        process_listing(listing_id, api_base_url, ollama_url)
+    except Exception:
+        logger.exception("failed to process listing_id=%s, skipping", listing_id)
     channel.basic_ack(delivery_tag=method.delivery_tag)
     return listing_id
 
