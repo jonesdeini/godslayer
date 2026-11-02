@@ -1,10 +1,10 @@
 import json
 import logging
-import time
 from functools import partial
 
 import pika
 import requests
+import tenacity
 
 from godslayer_ml.pipeline import process_listing
 
@@ -27,40 +27,29 @@ def is_permanent_failure(exc: Exception) -> bool:
     return False
 
 
+@tenacity.retry(
+    stop=tenacity.stop_after_attempt(MAX_ATTEMPTS),
+    wait=tenacity.wait_fixed(RETRY_DELAY_SECONDS),
+    retry=tenacity.retry_if_exception(lambda exc: not is_permanent_failure(exc)),
+    before_sleep=tenacity.before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
+def process_listing_with_retry(listing_id: int, api_base_url: str, ollama_url: str) -> None:
+    process_listing(listing_id, api_base_url, ollama_url)
+
+
 def handle_message(channel, method, properties, body, api_base_url: str, ollama_url: str) -> int:
     listing_id = json.loads(body)["listing_id"]
     logger.info("received listing_ready for listing_id=%s", listing_id)
 
-    attempt = 1
-    while True:
-        try:
-            process_listing(listing_id, api_base_url, ollama_url)
-            channel.basic_ack(delivery_tag=method.delivery_tag)
-            return listing_id
-        except Exception as exc:
-            out_of_attempts = attempt >= MAX_ATTEMPTS
-            if is_permanent_failure(exc) or out_of_attempts:
-                logger.exception(
-                    "failed to process listing_id=%s on attempt %s/%s, sending to %s",
-                    listing_id,
-                    attempt,
-                    MAX_ATTEMPTS,
-                    DEAD_QUEUE_NAME,
-                )
-                channel.basic_publish(exchange="", routing_key=DEAD_QUEUE_NAME, body=body)
-                channel.basic_ack(delivery_tag=method.delivery_tag)
-                return listing_id
+    try:
+        process_listing_with_retry(listing_id, api_base_url, ollama_url)
+    except Exception:
+        logger.exception("failed to process listing_id=%s, sending to %s", listing_id, DEAD_QUEUE_NAME)
+        channel.basic_publish(exchange="", routing_key=DEAD_QUEUE_NAME, body=body)
 
-            logger.warning(
-                "attempt %s/%s failed for listing_id=%s (%s), retrying in %ss",
-                attempt,
-                MAX_ATTEMPTS,
-                listing_id,
-                exc,
-                RETRY_DELAY_SECONDS,
-            )
-            time.sleep(RETRY_DELAY_SECONDS)
-            attempt += 1
+    channel.basic_ack(delivery_tag=method.delivery_tag)
+    return listing_id
 
 
 def run(amqp_url: str, api_base_url: str, ollama_url: str) -> None:

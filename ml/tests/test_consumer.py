@@ -31,7 +31,7 @@ def test_handle_message_retries_a_transient_failure_and_acks_once_it_succeeds():
             "godslayer_ml.consumer.process_listing",
             side_effect=[ConnectionError("web unreachable"), None],
         ) as process_listing,
-        patch("godslayer_ml.consumer.time.sleep") as sleep,
+        patch("tenacity.nap.time.sleep") as sleep,
     ):
         listing_id = handle_message(
             channel, method, None, body, api_base_url="http://api.example.com", ollama_url="http://ollama.example.com"
@@ -53,7 +53,7 @@ def test_handle_message_sends_to_the_dead_queue_once_retries_are_exhausted():
         patch(
             "godslayer_ml.consumer.process_listing", side_effect=ConnectionError("web unreachable")
         ) as process_listing,
-        patch("godslayer_ml.consumer.time.sleep") as sleep,
+        patch("tenacity.nap.time.sleep") as sleep,
     ):
         listing_id = handle_message(
             channel, method, None, body, api_base_url="http://api.example.com", ollama_url="http://ollama.example.com"
@@ -75,7 +75,7 @@ def test_handle_message_sends_a_permanent_failure_straight_to_the_dead_queue_wit
 
     with (
         patch("godslayer_ml.consumer.process_listing", side_effect=not_found) as process_listing,
-        patch("godslayer_ml.consumer.time.sleep") as sleep,
+        patch("tenacity.nap.time.sleep") as sleep,
     ):
         listing_id = handle_message(
             channel, method, None, body, api_base_url="http://api.example.com", ollama_url="http://ollama.example.com"
