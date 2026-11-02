@@ -36,5 +36,11 @@ def test_compare_ram_matches_when_claim_is_accurate():
 
 
 def test_compare_ram_reports_no_evidence_when_either_side_is_missing():
-    assert compare_ram({"ram_value": None, "ram_unit": None}, {"ram_value": 114688, "ram_unit": "MB"})["verdict"] == "no_evidence"
-    assert compare_ram({"ram_value": 128, "ram_unit": "GB"}, {"ram_value": None, "ram_unit": None})["verdict"] == "no_evidence"
+    assert (
+        compare_ram({"ram_value": None, "ram_unit": None}, {"ram_value": 114688, "ram_unit": "MB"})["verdict"]
+        == "no_evidence"
+    )
+    assert (
+        compare_ram({"ram_value": 128, "ram_unit": "GB"}, {"ram_value": None, "ram_unit": None})["verdict"]
+        == "no_evidence"
+    )

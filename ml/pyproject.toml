@@ -24,4 +24,12 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pytest>=9.2.0",
+    "ruff>=0.17.3",
 ]
+
+[tool.ruff]
+# Matches this repo's Ruby side: rubocop-rails-omakase enforces no max
+# line length, and the existing Python here was already written long-
+# line in that same spirit - 120 avoids ruff format fighting a house
+# style that already exists, without going fully unbounded.
+line-length = 120
