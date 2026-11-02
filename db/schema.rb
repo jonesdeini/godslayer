@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_31_154255) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_01_183305) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_154255) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "determinations", force: :cascade do |t|
+    t.bigint "listing_id", null: false
+    t.bigint "listing_image_id"
+    t.string "field", null: false
+    t.string "verdict", null: false
+    t.decimal "claimed_value"
+    t.string "claimed_unit"
+    t.decimal "photo_value"
+    t.string "photo_unit"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["listing_id", "field"], name: "index_determinations_on_listing_id_and_field", unique: true, where: "active"
+    t.index ["listing_image_id"], name: "index_determinations_on_listing_image_id"
   end
 
   create_table "listing_images", force: :cascade do |t|
@@ -97,6 +113,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_154255) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "determinations", "listing_images"
+  add_foreign_key "determinations", "listings"
   add_foreign_key "listing_images", "listings"
   add_foreign_key "listing_search_keywords", "listings"
   add_foreign_key "listing_search_keywords", "search_keywords"
