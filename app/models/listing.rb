@@ -53,4 +53,10 @@ class Listing < ApplicationRecord
   def localized_aspects
     raw["localizedAspects"]
   end
+
+  def ebay_url
+    url if URI.parse(url).scheme.in? %w[http https]
+  rescue URI::InvalidURIError
+    nil
+  end
 end

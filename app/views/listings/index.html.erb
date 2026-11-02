@@ -1,0 +1,29 @@
+<h1>Listings</h1>
+
+<p><%= link_to "Search keywords", search_keywords_path %></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Price</th>
+      <th>Verdict</th>
+      <th>Claimed RAM</th>
+      <th>Photo RAM</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% listings.each do |listing| %>
+      <% determination = listing.determinations.find(&:active?) %>
+      <tr>
+        <td><%= link_to listing.title, listing %></td>
+        <td><%= number_to_currency(listing.price_cents / 100.0) %></td>
+        <td><%= determination&.verdict || "pending" %></td>
+        <td><%= determination && "#{determination.claimed_value} #{determination.claimed_unit}" %></td>
+        <td><%= determination && "#{determination.photo_value} #{determination.photo_unit}" %></td>
+        <td><%= link_to "eBay", listing.ebay_url, target: "_blank", rel: "noopener" if listing.ebay_url %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

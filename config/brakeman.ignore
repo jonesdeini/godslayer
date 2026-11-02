@@ -1,0 +1,28 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 86,
+      "fingerprint": "29296945fc7e03612518934b31a768d4a2cd092c10bce13e44113ef08b275548",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in link_to href",
+      "file": "app/views/listings/show.html.erb",
+      "line": 3,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting/",
+      "code": null,
+      "render_path": null,
+      "location": {
+        "type": "template",
+        "template": "listings/show"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        79
+      ],
+      "note": "listing.ebay_url already validates the scheme is http/https (see Listing#ebay_url) before this is ever rendered, defending against the javascript: URI this check exists for. Brakeman can't trace taint through a custom method, so it still flags the result of that validation the same as the raw column - this is a true false positive, not a suppressed real finding."
+    }
+  ],
+  "updated": "2026-11-02 13:40:00 -0000",
+  "brakeman_version": "8.1.0"
+}
