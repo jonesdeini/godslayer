@@ -71,6 +71,25 @@ jobs:
       - name: Run tests
         run: bin/rails test
 
+  scan_ml:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Scan for common Python security vulnerabilities using static analysis
+        run: uv run bandit -r src/
+
   lint_ml:
     runs-on: ubuntu-latest
     defaults:
@@ -138,7 +157,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:latest
 
   build_and_push_ml:
-    needs: [ lint_ml, test_ml ]
+    needs: [ scan_ml, lint_ml, test_ml ]
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
