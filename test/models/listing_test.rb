@@ -72,4 +72,13 @@ class ListingTest < ActiveSupport::TestCase
 
     assert resweep.seller_item_revision_changed?
   end
+
+  test "destroying a listing with a determination pointing at a listing_image doesn't violate the FK" do
+    listing = Listing.from_ebay_json RAW.merge("itemId" => "v1|destroy-fk-test|0")
+    listing.save!
+    listing_image = listing.listing_images.create! source_url: "https://images.example.com/bios.jpg"
+    listing.determinations.create!(field: "ram", verdict: "match", listing_image:)
+
+    assert_nothing_raised { listing.destroy! }
+  end
 end

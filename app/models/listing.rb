@@ -3,8 +3,8 @@
 class Listing < ApplicationRecord
   has_many :listing_search_keywords, dependent: :destroy
   has_many :search_keywords, through: :listing_search_keywords
-  has_many :listing_images, dependent: :destroy
   has_many :determinations, dependent: :destroy
+  has_many :listing_images, dependent: :destroy
 
   def self.from_ebay_json(ebay_json)
     ebay_item_id = ebay_json.fetch "itemId"
