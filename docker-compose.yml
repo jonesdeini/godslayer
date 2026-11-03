@@ -74,6 +74,7 @@ services:
       EBAY_MARKETPLACE_ID: ${EBAY_MARKETPLACE_ID}
       EBAY_ENVIRONMENT: ${EBAY_ENVIRONMENT}
       PRICE_CAP_CENTS: ${PRICE_CAP_CENTS}
+      SENTRY_DSN: ${SENTRY_DSN}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
@@ -106,6 +107,7 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
       GODSLAYER_API_URL: http://web:3000
       OLLAMA_URL: http://ollama:11434
+      SENTRY_DSN: ${SENTRY_DSN_ML}
 
   # Poll-based deploy: no inbound access to this box needed, GitHub never
   # executes anything here, it just gets pulled from. See reef-1000's

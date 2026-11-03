@@ -12,6 +12,8 @@ gem "pg", "~> 1.1"
 gem "propshaft"
 gem "puma", ">= 5.0"
 gem "rails", "~> 8.1.4"
+gem "sentry-rails", "~> 7.2"
+gem "sentry-ruby", "~> 7.2"
 gem "solid_queue"
 gem "stimulus-rails"
 gem "thruster", require: false
