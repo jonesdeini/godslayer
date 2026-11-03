@@ -22,7 +22,7 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
-      - "100.92.93.12:15672:15672"
+      - "${TAILSCALE_IP:-127.0.0.1}:15672:15672"
     volumes:
       - ./rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
