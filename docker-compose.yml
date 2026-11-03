@@ -126,4 +126,4 @@ services:
     entrypoint: sh
     # ollama isn't pulled automatically - it's not our image and doesn't
     # need frequent updates, just `docker compose pull ollama` once by hand.
-    command: -c 'while true; do docker compose pull --quiet web jobs ml postgres rabbitmq && docker compose up -d web jobs ml ollama postgres rabbitmq && docker image prune -f; sleep 300; done'
+    command: -c 'apk add --no-cache git >/dev/null 2>&1; git config --global --add safe.directory /mnt/user/godslayerrr/godslayer; while true; do git pull --ff-only --quiet || true; docker compose pull --quiet web jobs ml postgres rabbitmq && docker compose up -d web jobs ml ollama postgres rabbitmq && docker image prune -f; sleep 300; done'
