@@ -124,6 +124,8 @@ services:
       - /mnt/user/godslayerrr/godslayer:/mnt/user/godslayerrr/godslayer
     working_dir: /mnt/user/godslayerrr/godslayer
     entrypoint: sh
-    # ollama isn't pulled automatically - it's not our image and doesn't
-    # need frequent updates, just `docker compose pull ollama` once by hand.
-    command: -c 'apk add --no-cache git >/dev/null 2>&1; git config --global --add safe.directory /mnt/user/godslayerrr/godslayer; while true; do git pull --ff-only --quiet || true; docker compose pull --quiet web jobs ml postgres rabbitmq && docker compose up -d web jobs ml ollama postgres rabbitmq && docker image prune -f; sleep 300; done'
+    # pull stays an explicit, curated list - ollama is deliberately excluded
+    # (it's not our image and doesn't need frequent updates, just
+    # `docker compose pull ollama` once by hand if it ever does). up -d has
+    # no service list on purpose, unlike pull - see commit message.
+    command: -c 'apk add --no-cache git >/dev/null 2>&1; git config --global --add safe.directory /mnt/user/godslayerrr/godslayer; while true; do git pull --ff-only --quiet || true; docker compose pull --quiet web jobs ml postgres rabbitmq updater && docker compose up -d && docker image prune -f; sleep 300; done'
