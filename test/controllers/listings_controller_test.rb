@@ -32,6 +32,19 @@ class ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_operator body.index(no_evidence.title), :<, body.index(pending.title)
   end
 
+  test "index sorts listings within the same verdict by price descending" do
+    cheap = create_listing "cheap"
+    cheap.update! price_cents: 1000
+    pricey = create_listing "pricey"
+    pricey.update! price_cents: 5000
+
+    get listings_path
+
+    assert_response :success
+    body = response.body
+    assert_operator body.index(pricey.title), :<, body.index(cheap.title)
+  end
+
   test "show renders a listing with its active determination" do
     listing = create_listing "show-test"
     DeterminationWriter.write listing:, field: "ram", verdict: "mismatch", claimed_value: 16,
