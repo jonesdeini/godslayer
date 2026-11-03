@@ -2,7 +2,7 @@ import json
 
 import requests
 
-OLLAMA_MODEL = "qwen2.5:14b"
+OLLAMA_MODEL = "granite4.2:8b"
 
 CLAIM_PROMPT = """Below are a seller's own words describing a used server listing's RAM.
 

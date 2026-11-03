@@ -51,7 +51,7 @@ services:
         condition: service_started
     environment:
       OLLAMA_HOST: ollama:11434
-    entrypoint: [ "sh", "-c", "until ollama list >/dev/null 2>&1; do sleep 2; done; ollama pull qwen2.5:14b" ]
+    entrypoint: [ "sh", "-c", "until ollama list >/dev/null 2>&1; do sleep 2; done; ollama pull granite4.2:8b" ]
 
   web:
     image: ghcr.io/jonesdeini/godslayer:latest
