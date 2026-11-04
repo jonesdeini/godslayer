@@ -13,6 +13,7 @@ class Listing < ApplicationRecord
     listing.assign_attributes(
       title: ebay_json["title"],
       price_cents: price_cents(ebay_json.dig("price", "value")),
+      price: ebay_json.dig("price", "value"),
       currency: ebay_json.dig("price", "currency"),
       condition: ebay_json["condition"],
       category_id: ebay_json["categoryId"],
