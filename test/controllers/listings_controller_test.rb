@@ -7,7 +7,6 @@ class ListingsControllerTest < ActionDispatch::IntegrationTest
     Listing.create!(
       ebay_item_id:,
       title: "Test Listing #{ebay_item_id}",
-      price_cents: 1000,
       price: 10.00,
       currency: "USD",
       url: "https://sandbox.ebay.com/itm/#{ebay_item_id}",

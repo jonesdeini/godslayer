@@ -7,7 +7,7 @@ class ListingImageDownloadJobTest < ActiveSupport::TestCase
     Listing.create!(
       ebay_item_id:,
       title: "Test Listing",
-      price_cents: 1000,
+      price: 10.00,
       currency: "USD",
       url: "https://sandbox.ebay.com/itm/#{ebay_item_id}",
       raw:,

@@ -1,7 +1,7 @@
 <h1><%= listing.title %></h1>
 
 <p><%= link_to "View on eBay", listing.ebay_url, target: "_blank", rel: "noopener" if listing.ebay_url %></p>
-<p>Price: <%= number_to_currency(listing.price_cents / 100.0) %></p>
+<p>Price: <%= number_to_currency(listing.price) %></p>
 <p>Condition: <%= listing.condition %></p>
 
 <h2>RAM determination</h2>

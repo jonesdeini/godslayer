@@ -7,7 +7,7 @@ class ListingSearchKeywordTest < ActiveSupport::TestCase
     @listing = Listing.create!(
       ebay_item_id: "v1|110591042924|0",
       title: "Test Laptop",
-      price_cents: 49999,
+      price: 499.99,
       currency: "USD",
       url: "https://sandbox.ebay.com/itm/110591042924",
       raw: {},

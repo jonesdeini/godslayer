@@ -7,7 +7,7 @@ class DeterminationWriterTest < ActiveSupport::TestCase
     @listing ||= Listing.create!(
       ebay_item_id: "v1|writer-test|0",
       title: "Test Listing",
-      price_cents: 1000,
+      price: 10.00,
       currency: "USD",
       url: "https://sandbox.ebay.com/itm/writer-test",
       first_seen_at: Time.current,

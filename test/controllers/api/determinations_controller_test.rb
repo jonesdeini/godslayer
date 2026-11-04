@@ -7,7 +7,7 @@ class Api::DeterminationsControllerTest < ActionDispatch::IntegrationTest
     @listing ||= Listing.create!(
       ebay_item_id: "v1|determinations-controller-test|0",
       title: "Test Listing",
-      price_cents: 1000,
+      price: 10.00,
       currency: "USD",
       url: "https://sandbox.ebay.com/itm/determinations-controller-test",
       first_seen_at: Time.current,
