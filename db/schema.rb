@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_01_183305) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_180400) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -99,6 +99,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_183305) do
     t.boolean "best_offer", default: false, null: false
     t.datetime "images_downloaded_at"
     t.datetime "published_at"
+    t.decimal "price"
     t.index ["ebay_item_id"], name: "index_listings_on_ebay_item_id", unique: true
   end
 

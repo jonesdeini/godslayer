@@ -46,6 +46,7 @@ class ListingTest < ActiveSupport::TestCase
     assert listing.new_record?
     assert_equal "v1|110591042924|0", listing.ebay_item_id
     assert_equal 49999, listing.price_cents
+    assert_equal BigDecimal("499.99"), listing.price
     assert_equal "95112", listing.postal_code
     assert_equal "US", listing.country
     assert_not_nil listing.first_seen_at
