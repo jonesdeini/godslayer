@@ -1,12 +1,18 @@
 # frozen_string_literal: true
 
 class Listing < ApplicationRecord
+  REVIEW_STATUSES = %w[not_worth_it made_offer needs_reevaluation].freeze
+
   has_many :listing_search_keywords, dependent: :destroy
   has_many :search_keywords, through: :listing_search_keywords
   has_many :determinations, dependent: :destroy
   has_many :listing_images, dependent: :destroy
 
+  validates :review_status, inclusion: { in: REVIEW_STATUSES }, allow_nil: true
+  before_validation { self.review_status = nil if review_status.blank? }
+
   scope :ordered_for_review, -> { order(price_cents: :desc) }
+  scope :unreviewed, -> { where(review_status: nil) }
 
   def self.from_ebay_json(ebay_json)
     ebay_item_id = ebay_json.fetch "itemId"

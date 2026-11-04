@@ -81,4 +81,38 @@ class ListingTest < ActiveSupport::TestCase
 
     assert_nothing_raised { listing.destroy! }
   end
+
+  test "review_status accepts the known statuses and rejects anything else" do
+    listing = Listing.from_ebay_json RAW.merge("itemId" => "v1|review-status-test|0")
+
+    Listing::REVIEW_STATUSES.each do |status|
+      listing.review_status = status
+      assert listing.valid?, "expected #{status.inspect} to be valid"
+    end
+
+    listing.review_status = "junk"
+    refute listing.valid?
+  end
+
+  test "review_status normalizes a blank string to nil" do
+    listing = Listing.from_ebay_json RAW.merge("itemId" => "v1|review-status-blank-test|0")
+    listing.review_status = ""
+
+    listing.save!
+
+    assert_nil listing.reload.review_status
+  end
+
+  test "unreviewed scope only includes listings with no review_status" do
+    reviewed = Listing.from_ebay_json RAW.merge("itemId" => "v1|reviewed-test|0")
+    reviewed.review_status = "not_worth_it"
+    reviewed.save!
+    unreviewed = Listing.from_ebay_json RAW.merge("itemId" => "v1|unreviewed-test|0")
+    unreviewed.save!
+
+    result = Listing.unreviewed
+
+    assert_includes result, unreviewed
+    refute_includes result, reviewed
+  end
 end

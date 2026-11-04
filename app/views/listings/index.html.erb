@@ -2,6 +2,8 @@
 
 <p><%= link_to "Search keywords", search_keywords_path %></p>
 
+<p><%= link_to show_reviewed ? "Hide reviewed" : "Show reviewed", listings_path(show_reviewed: (true unless show_reviewed)) %></p>
+
 <table>
   <thead>
     <tr>
@@ -10,6 +12,7 @@
       <th>Verdict</th>
       <th>Claimed RAM</th>
       <th>Photo RAM</th>
+      <th>Status</th>
       <th></th>
     </tr>
   </thead>
@@ -22,7 +25,19 @@
         <td><%= determination&.verdict || "pending" %></td>
         <td><%= determination && "#{determination.claimed_value} #{determination.claimed_unit}" %></td>
         <td><%= determination && "#{determination.photo_value} #{determination.photo_unit}" %></td>
-        <td><%= link_to "eBay", listing.ebay_url, target: "_blank", rel: "noopener" if listing.ebay_url %></td>
+        <td><%= listing.review_status&.tr("_", " ") || "-" %></td>
+        <td>
+          <% return_param = { show_reviewed: (true if show_reviewed) } %>
+          <% (Listing::REVIEW_STATUSES - [ listing.review_status ]).each do |status| %>
+            <%= button_to status.tr("_", " "), listing_path(listing, **return_param), method: :patch,
+              params: { listing: { review_status: status } } %>
+          <% end %>
+          <% if listing.review_status.present? %>
+            <%= button_to "Clear", listing_path(listing, **return_param), method: :patch,
+              params: { listing: { review_status: "" } } %>
+          <% end %>
+          <%= link_to "eBay", listing.ebay_url, target: "_blank", rel: "noopener" if listing.ebay_url %>
+        </td>
       </tr>
     <% end %>
   </tbody>
