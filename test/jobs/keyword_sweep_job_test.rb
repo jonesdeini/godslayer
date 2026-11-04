@@ -34,6 +34,15 @@ class KeywordSweepJobTest < ActiveJob::TestCase
       args: [ { ebay_item_id: "v1|222|0", search_keyword_id: search_keywords(:one).id } ]
   end
 
+  test "passes the keyword's exclude phrase through to the search" do
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Widget+-%22no+core%22&sort=newlyListed&limit=100")
+      .to_return(status: 200, body: { itemSummaries: [] }.to_json)
+
+    KeywordSweepJob.perform_now search_keywords(:with_exclude_phrase)
+
+    assert_equal 0, Listing.count
+  end
+
   test "skips an item whose detail fetch fails, without losing the others" do
     search_body = { itemSummaries: [ { itemId: "v1|111|0" }, { itemId: "v1|222|0" } ] }.to_json
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=100")

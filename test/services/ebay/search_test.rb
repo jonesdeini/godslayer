@@ -15,6 +15,16 @@ class Ebay::SearchTest < ActiveSupport::TestCase
     assert_equal "search results", Ebay::Search.keyword("R730xd")
   end
 
+  test "adds a quoted -term exclusion when an exclude phrase is given" do
+    stub_request(
+      :get,
+      "https://api.ebay.com/buy/browse/v1/item_summary/search" \
+      "?q=Widget+-%22no+core%22&sort=newlyListed&limit=100"
+    ).to_return(status: 200, body: "search results")
+
+    assert_equal "search results", Ebay::Search.keyword("Widget", exclude_phrase: "no core")
+  end
+
   test "adds a price filter when a price cap is configured" do
     Rails.application.config.x.ebay.price_cap_cents = 25_000
 

@@ -11,3 +11,8 @@ two:
 retired:
   phrase: Xenon
   active: false
+
+with_exclude_phrase:
+  phrase: Widget
+  active: true
+  exclude_phrase: no core
