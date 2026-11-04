@@ -13,6 +13,6 @@ class SweepSchedulerJobTest < ActiveJob::TestCase
   test "does not enqueue a job for a retired keyword" do
     SweepSchedulerJob.perform_now
 
-    assert_enqueued_jobs 3, only: KeywordSweepJob
+    assert_enqueued_jobs 4, only: KeywordSweepJob
   end
 end
