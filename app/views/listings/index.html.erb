@@ -15,7 +15,7 @@
   </thead>
   <tbody>
     <% listings.each do |listing| %>
-      <% determination = listing.determinations.find(&:active?) %>
+      <% determination = listing.active_determination %>
       <tr>
         <td><%= link_to listing.title, listing %></td>
         <td><%= number_to_currency(listing.price_cents / 100.0) %></td>

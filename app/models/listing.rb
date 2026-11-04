@@ -6,6 +6,8 @@ class Listing < ApplicationRecord
   has_many :determinations, dependent: :destroy
   has_many :listing_images, dependent: :destroy
 
+  scope :ordered_for_review, -> { order(price_cents: :desc) }
+
   def self.from_ebay_json(ebay_json)
     ebay_item_id = ebay_json.fetch "itemId"
     buying_options = Array ebay_json["buyingOptions"]
@@ -58,5 +60,9 @@ class Listing < ApplicationRecord
     url if URI.parse(url).scheme.in? %w[http https]
   rescue URI::InvalidURIError
     nil
+  end
+
+  def active_determination
+    determinations.find(&:active?)
   end
 end

@@ -1,22 +1,13 @@
 # frozen_string_literal: true
 
 class ListingsController < ApplicationController
-  VERDICT_RANK = { "mismatch" => 0, "match" => 1, "no_evidence" => 2 }.freeze
-
   def index
-    listings = Listing.includes(:determinations).order(price_cents: :desc).to_a
-    listings.sort_by! { |listing| VERDICT_RANK.fetch active_determination(listing)&.verdict, 3 }
+    listings = Listing.includes(:determinations).ordered_for_review.to_a
     render locals: { listings: }
   end
 
   def show
     listing = Listing.includes(:listing_images, :determinations).find params[:id]
-    render locals: { listing:, determination: active_determination(listing) }
-  end
-
-  private
-
-  def active_determination(listing)
-    listing.determinations.find(&:active?)
+    render locals: { listing:, determination: listing.active_determination }
   end
 end
