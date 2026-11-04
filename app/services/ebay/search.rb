@@ -2,18 +2,19 @@
 
 module Ebay
   class Search < Ebay::Base
-    def self.keyword(phrase)
-      new.keyword phrase
+    def self.keyword(phrase, exclude_phrase: nil)
+      new.keyword phrase, exclude_phrase:
     end
 
-    def keyword(phrase)
-      get "#{base_url}/item_summary/search?#{query_string phrase}"
+    def keyword(phrase, exclude_phrase: nil)
+      get "#{base_url}/item_summary/search?#{query_string phrase, exclude_phrase}"
     end
 
     private
 
-    def query_string(phrase)
-      params = { q: phrase, sort: "newlyListed", limit: 100 }
+    def query_string(phrase, exclude_phrase)
+      q = exclude_phrase.present? ? %(#{phrase} -"#{exclude_phrase}") : phrase
+      params = { q:, sort: "newlyListed", limit: 100 }
       params[:filter] = price_filter if price_cap_cents.positive?
       URI.encode_www_form params
     end
