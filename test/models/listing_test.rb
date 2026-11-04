@@ -40,12 +40,11 @@ class ListingTest < ActiveSupport::TestCase
     assert_nil listing.primary_image_url
   end
 
-  test "from_ebay_json builds a new, unsaved listing with price parsed to cents and first/last_seen_at set" do
+  test "from_ebay_json builds a new, unsaved listing with price parsed and first/last_seen_at set" do
     listing = Listing.from_ebay_json RAW
 
     assert listing.new_record?
     assert_equal "v1|110591042924|0", listing.ebay_item_id
-    assert_equal 49999, listing.price_cents
     assert_equal BigDecimal("499.99"), listing.price
     assert_equal "95112", listing.postal_code
     assert_equal "US", listing.country

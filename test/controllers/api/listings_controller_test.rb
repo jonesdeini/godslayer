@@ -7,7 +7,7 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     listing = Listing.create!(
       ebay_item_id: "v1|110591042924|0",
       title: "Test Laptop Computer 16GB RAM 512GB SSD",
-      price_cents: 49999,
+      price: 499.99,
       currency: "USD",
       condition: "New",
       category_id: "177",
@@ -37,7 +37,7 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = JSON.parse response.body
     assert_equal "v1|110591042924|0", body["ebay_item_id"]
-    assert_equal 49999, body["price_cents"]
+    assert_equal "499.99", body["price"]
     assert_equal 2, body["images"].size
     assert_equal listing.listing_images.map(&:id), body["images"].map { |image| image["id"] }
     body["images"].each { |image| assert_match %r{\Ahttp://[^/]+/rails/active_storage/blobs/}, image["url"] }
@@ -55,7 +55,7 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     listing = Listing.create!(
       ebay_item_id: "v1|no-images|0",
       title: "No Images Yet",
-      price_cents: 1000,
+      price: 10.00,
       currency: "USD",
       url: "https://sandbox.ebay.com/itm/no-images",
       first_seen_at: Time.current,
@@ -88,7 +88,7 @@ class Api::ListingsControllerTest < ActionDispatch::IntegrationTest
     listing = Listing.create!(
       ebay_item_id: "v1|999|0",
       title: "Another Listing",
-      price_cents: 1000,
+      price: 10.00,
       currency: "USD",
       condition: "New",
       category_id: "177",

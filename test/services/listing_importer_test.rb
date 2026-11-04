@@ -31,12 +31,12 @@ class ListingImporterTest < ActiveSupport::TestCase
     ]
   }.to_json
 
-  test "imports a listing with price parsed to cents and location fields pulled straight from itemLocation" do
+  test "imports a listing with price parsed and location fields pulled straight from itemLocation" do
     listing_id = ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
 
     listing = Listing.find listing_id
     assert_equal "v1|110591042924|0", listing.ebay_item_id
-    assert_equal 49999, listing.price_cents
+    assert_equal BigDecimal("499.99"), listing.price
     assert_equal "USD", listing.currency
     assert_equal "951**", listing.postal_code
     assert_equal "US", listing.country
@@ -73,7 +73,7 @@ class ListingImporterTest < ActiveSupport::TestCase
     assert_equal "3", Listing.find(listing_id).seller_item_revision
   end
 
-  test "a resweep with no real revision does not touch last_seen_at or price_cents" do
+  test "a resweep with no real revision does not touch last_seen_at or price" do
     ListingImporter.import REAL_SHAPED_DETAIL, search_keyword_id: search_keywords(:one).id
     original_last_seen_at = Listing.find_by!(ebay_item_id: "v1|110591042924|0").last_seen_at
 
@@ -83,7 +83,7 @@ class ListingImporterTest < ActiveSupport::TestCase
       ListingImporter.import changed_price.to_json, search_keyword_id: search_keywords(:one).id
 
       listing = Listing.find_by! ebay_item_id: "v1|110591042924|0"
-      assert_equal 49999, listing.price_cents
+      assert_equal BigDecimal("499.99"), listing.price
       assert_equal original_last_seen_at, listing.last_seen_at
     end
   end

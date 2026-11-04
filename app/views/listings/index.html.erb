@@ -18,7 +18,7 @@
       <% determination = listing.active_determination %>
       <tr>
         <td><%= link_to listing.title, listing %></td>
-        <td><%= number_to_currency(listing.price_cents / 100.0) %></td>
+        <td><%= number_to_currency(listing.price) %></td>
         <td><%= determination&.verdict || "pending" %></td>
         <td><%= determination && "#{determination.claimed_value} #{determination.claimed_unit}" %></td>
         <td><%= determination && "#{determination.photo_value} #{determination.photo_unit}" %></td>

@@ -14,7 +14,6 @@ class Listing < ApplicationRecord
     listing = find_or_initialize_by(ebay_item_id:)
     listing.assign_attributes(
       title: ebay_json["title"],
-      price_cents: price_cents(ebay_json.dig("price", "value")),
       price: ebay_json.dig("price", "value"),
       currency: ebay_json.dig("price", "currency"),
       condition: ebay_json["condition"],
@@ -34,12 +33,6 @@ class Listing < ApplicationRecord
     listing.first_seen_at ||= listing.last_seen_at
     listing
   end
-
-  def self.price_cents(value)
-    return 0 if value.nil?
-    (BigDecimal(value) * 100).round.to_i
-  end
-  private_class_method :price_cents
 
   def primary_image_url
     raw.dig "image", "imageUrl"
