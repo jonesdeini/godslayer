@@ -8,6 +8,7 @@ class ListingsControllerTest < ActionDispatch::IntegrationTest
       ebay_item_id:,
       title: "Test Listing #{ebay_item_id}",
       price_cents: 1000,
+      price: 10.00,
       currency: "USD",
       url: "https://sandbox.ebay.com/itm/#{ebay_item_id}",
       first_seen_at: Time.current,
@@ -16,33 +17,19 @@ class ListingsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
-  test "index lists listings, sorting mismatches and matches above no_evidence and pending" do
-    pending = create_listing "pending"
-    no_evidence = create_listing "no-evidence"
-    DeterminationWriter.write listing: no_evidence, field: "ram", verdict: "no_evidence"
-    mismatch = create_listing "mismatch"
-    DeterminationWriter.write listing: mismatch, field: "ram", verdict: "mismatch", claimed_value: 16,
+  test "index sorts listings by price descending, regardless of verdict" do
+    cheap_mismatch = create_listing "cheap-mismatch"
+    cheap_mismatch.update! price: 10.00
+    DeterminationWriter.write listing: cheap_mismatch, field: "ram", verdict: "mismatch", claimed_value: 16,
       claimed_unit: "GB", photo_value: 32, photo_unit: "GB"
+    pricey_pending = create_listing "pricey-pending"
+    pricey_pending.update! price: 50.00
 
     get listings_path
 
     assert_response :success
     body = response.body
-    assert_operator body.index(mismatch.title), :<, body.index(no_evidence.title)
-    assert_operator body.index(no_evidence.title), :<, body.index(pending.title)
-  end
-
-  test "index sorts listings within the same verdict by price descending" do
-    cheap = create_listing "cheap"
-    cheap.update! price_cents: 1000
-    pricey = create_listing "pricey"
-    pricey.update! price_cents: 5000
-
-    get listings_path
-
-    assert_response :success
-    body = response.body
-    assert_operator body.index(pricey.title), :<, body.index(cheap.title)
+    assert_operator body.index(pricey_pending.title), :<, body.index(cheap_mismatch.title)
   end
 
   test "show renders a listing with its active determination" do
