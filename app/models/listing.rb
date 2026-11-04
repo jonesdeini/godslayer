@@ -34,6 +34,10 @@ class Listing < ApplicationRecord
     listing
   end
 
+  def changed_since_summary?(summary)
+    price != BigDecimal(summary.dig("price", "value")) || condition != summary["condition"]
+  end
+
   def primary_image_url
     raw.dig "image", "imageUrl"
   end
