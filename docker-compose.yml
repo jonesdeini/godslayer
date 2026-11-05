@@ -74,6 +74,7 @@ services:
       EBAY_MARKETPLACE_ID: ${EBAY_MARKETPLACE_ID}
       EBAY_ENVIRONMENT: ${EBAY_ENVIRONMENT}
       PRICE_CAP_CENTS: ${PRICE_CAP_CENTS}
+      ITEM_LOCATION_COUNTRY: ${ITEM_LOCATION_COUNTRY}
       SENTRY_DSN: ${SENTRY_DSN}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
