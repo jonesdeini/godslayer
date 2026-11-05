@@ -9,10 +9,10 @@ class Ebay::SearchTest < ActiveSupport::TestCase
   end
 
   test "searches by keyword, newest first, with no price filter by default" do
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=200")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Widget&sort=newlyListed&limit=200")
       .to_return(status: 200, body: { itemSummaries: [ { itemId: "v1|111|0" } ] }.to_json)
 
-    assert_equal [ { "itemId" => "v1|111|0" } ], Ebay::Search.keyword("R730xd")
+    assert_equal [ { "itemId" => "v1|111|0" } ], Ebay::Search.keyword("Widget")
   end
 
   test "adds a quoted -term exclusion when an exclude phrase is given" do
@@ -31,12 +31,42 @@ class Ebay::SearchTest < ActiveSupport::TestCase
     stub_request(
       :get,
       "https://api.ebay.com/buy/browse/v1/item_summary/search" \
-      "?q=R730xd&sort=newlyListed&limit=200&filter=price%3A%5B..250.0%5D%2CpriceCurrency%3AUSD"
+      "?q=Widget&sort=newlyListed&limit=200&filter=price%3A%5B..250.0%5D%2CpriceCurrency%3AUSD"
     ).to_return(status: 200, body: { itemSummaries: [ { itemId: "v1|111|0" } ] }.to_json)
 
-    assert_equal [ { "itemId" => "v1|111|0" } ], Ebay::Search.keyword("R730xd")
+    assert_equal [ { "itemId" => "v1|111|0" } ], Ebay::Search.keyword("Widget")
   ensure
     Rails.application.config.x.ebay.price_cap_cents = 0
+  end
+
+  test "adds a location filter when an item location country is configured" do
+    Rails.application.config.x.ebay.item_location_country = "US"
+
+    stub_request(
+      :get,
+      "https://api.ebay.com/buy/browse/v1/item_summary/search" \
+      "?q=Widget&sort=newlyListed&limit=200&filter=itemLocationCountry%3AUS"
+    ).to_return(status: 200, body: { itemSummaries: [ { itemId: "v1|111|0" } ] }.to_json)
+
+    assert_equal [ { "itemId" => "v1|111|0" } ], Ebay::Search.keyword("Widget")
+  ensure
+    Rails.application.config.x.ebay.item_location_country = ""
+  end
+
+  test "combines price and location filters when both are configured" do
+    Rails.application.config.x.ebay.price_cap_cents = 25_000
+    Rails.application.config.x.ebay.item_location_country = "US"
+
+    stub_request(
+      :get,
+      "https://api.ebay.com/buy/browse/v1/item_summary/search" \
+      "?q=Widget&sort=newlyListed&limit=200&filter=price%3A%5B..250.0%5D%2CpriceCurrency%3AUSD%2CitemLocationCountry%3AUS"
+    ).to_return(status: 200, body: { itemSummaries: [ { itemId: "v1|111|0" } ] }.to_json)
+
+    assert_equal [ { "itemId" => "v1|111|0" } ], Ebay::Search.keyword("Widget")
+  ensure
+    Rails.application.config.x.ebay.price_cap_cents = 0
+    Rails.application.config.x.ebay.item_location_country = ""
   end
 
   test "follows next across multiple pages and merges every itemSummaries array" do
