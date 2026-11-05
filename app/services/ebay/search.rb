@@ -24,16 +24,32 @@ module Ebay
     def query_string(phrase, exclude_phrase)
       q = exclude_phrase.present? ? %(#{phrase} -"#{exclude_phrase}") : phrase
       params = { q:, sort: "newlyListed", limit: 200 }
-      params[:filter] = price_filter if price_cap_cents.positive?
+      params[:filter] = filters.join(",") if filters.any?
       URI.encode_www_form params
     end
 
+    def filters
+      [ price_filter, location_filter ].compact
+    end
+
     def price_filter
+      return unless price_cap_cents.positive?
+
       "price:[..#{price_cap_cents / 100.0}],priceCurrency:USD"
+    end
+
+    def location_filter
+      return if item_location_country.blank?
+
+      "itemLocationCountry:#{item_location_country}"
     end
 
     def price_cap_cents
       Rails.application.config.x.ebay.price_cap_cents
+    end
+
+    def item_location_country
+      Rails.application.config.x.ebay.item_location_country
     end
   end
 end

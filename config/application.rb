@@ -43,6 +43,7 @@ module Godslayer
     config.x.ebay.marketplace_id = ENV.fetch "EBAY_MARKETPLACE_ID", "EBAY_US"
     config.x.ebay.environment = ENV.fetch "EBAY_ENVIRONMENT"
     config.x.ebay.price_cap_cents = ENV.fetch("PRICE_CAP_CENTS", "0").to_i
+    config.x.ebay.item_location_country = ENV.fetch "ITEM_LOCATION_COUNTRY", ""
 
     config.x.rabbitmq.url = ENV.fetch "RABBITMQ_URL", "amqp://guest:guest@localhost:5672"
 
