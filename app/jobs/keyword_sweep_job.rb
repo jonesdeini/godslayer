@@ -4,8 +4,7 @@ class KeywordSweepJob < ApplicationJob
   queue_as :sweep
 
   def perform(keyword)
-    search_results = JSON.parse Ebay::Search.keyword(keyword.phrase, exclude_phrase: keyword.exclude_phrase)
-    search_results.fetch("itemSummaries", []).each do |summary|
+    Ebay::Search.keyword(keyword.phrase, exclude_phrase: keyword.exclude_phrase).each do |summary|
       import_item summary, keyword.id
     end
   end
