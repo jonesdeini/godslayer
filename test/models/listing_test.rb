@@ -73,6 +73,27 @@ class ListingTest < ActiveSupport::TestCase
     assert resweep.seller_item_revision_changed?
   end
 
+  test "changed_since_summary? is false when a search summary's price and condition both still match" do
+    listing = Listing.from_ebay_json RAW
+    listing.save!
+
+    refute listing.changed_since_summary?(RAW)
+  end
+
+  test "changed_since_summary? is true when the summary's price differs" do
+    listing = Listing.from_ebay_json RAW
+    listing.save!
+
+    assert listing.changed_since_summary?(RAW.merge("price" => { "value" => "399.99", "currency" => "USD" }))
+  end
+
+  test "changed_since_summary? is true when the summary's condition differs" do
+    listing = Listing.from_ebay_json RAW
+    listing.save!
+
+    assert listing.changed_since_summary?(RAW.merge("condition" => "Used"))
+  end
+
   test "destroying a listing with a determination pointing at a listing_image doesn't violate the FK" do
     listing = Listing.from_ebay_json RAW.merge("itemId" => "v1|destroy-fk-test|0")
     listing.save!

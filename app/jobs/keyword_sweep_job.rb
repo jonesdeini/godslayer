@@ -18,7 +18,12 @@ class KeywordSweepJob < ApplicationJob
   # after we already know the item id.
   def import_item(summary, search_keyword_id)
     item_id = summary.fetch "itemId"
-    ListingImporter.import Ebay::Item.detail(item_id), search_keyword_id:
+    ListingSearchKeywordLinkJob.set(wait: 1.minute).perform_later search_keyword_id:, ebay_item_id: item_id
+
+    listing = Listing.find_by ebay_item_id: item_id
+    return if listing && !listing.changed_since_summary?(summary)
+
+    ListingImporter.import Ebay::Item.detail(item_id)
   rescue StandardError => e
     Rails.logger.error "KeywordSweepJob: failed to import #{summary.inspect}: #{e.class}: #{e.message}"
   end

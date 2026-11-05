@@ -16,3 +16,7 @@ with_exclude_phrase:
   phrase: Widget
   active: true
   exclude_phrase: no core
+
+generic:
+  phrase: Gadget
+  active: true
