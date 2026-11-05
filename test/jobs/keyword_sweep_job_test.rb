@@ -12,7 +12,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0" }, { itemId: "v1|222|0" } ]
     }.to_json
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=100")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=200")
       .to_return(status: 200, body: search_body)
 
     detail_111 = { itemId: "v1|111|0", title: "Dell R730xd", price: { value: "100.00", currency: "USD" },
@@ -35,7 +35,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
   end
 
   test "passes the keyword's exclude phrase through to the search" do
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Widget+-%22no+core%22&sort=newlyListed&limit=100")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Widget+-%22no+core%22&sort=newlyListed&limit=200")
       .to_return(status: 200, body: { itemSummaries: [] }.to_json)
 
     KeywordSweepJob.perform_now search_keywords(:with_exclude_phrase)
@@ -53,7 +53,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", price: { value: "100.00", currency: "USD" }, condition: "Used" } ]
     }.to_json
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Gadget&sort=newlyListed&limit=100")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Gadget&sort=newlyListed&limit=200")
       .to_return(status: 200, body: search_body)
 
     KeywordSweepJob.perform_now search_keywords(:generic)
@@ -75,7 +75,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", price: { value: "80.00", currency: "USD" }, condition: "Used" } ]
     }.to_json
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Gadget&sort=newlyListed&limit=100")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Gadget&sort=newlyListed&limit=200")
       .to_return(status: 200, body: search_body)
 
     detail_111 = { itemId: "v1|111|0", title: "Test Gadget", price: { value: "80.00", currency: "USD" },
@@ -90,7 +90,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
 
   test "skips an item whose detail fetch fails, without losing the others" do
     search_body = { itemSummaries: [ { itemId: "v1|111|0" }, { itemId: "v1|222|0" } ] }.to_json
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=100")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=200")
       .to_return(status: 200, body: search_body)
 
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C111%7C0").to_return status: 500, body: "boom"
@@ -106,7 +106,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
 
   test "still enqueues the link job for an item whose detail fetch fails" do
     search_body = { itemSummaries: [ { itemId: "v1|111|0" } ] }.to_json
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Widget+-%22no+core%22&sort=newlyListed&limit=100")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Widget+-%22no+core%22&sort=newlyListed&limit=200")
       .to_return(status: 200, body: search_body)
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C111%7C0").to_return status: 500, body: "boom"
 
@@ -120,7 +120,7 @@ class KeywordSweepJobTest < ActiveJob::TestCase
     search_body = {
       itemSummaries: [ { title: "malformed, no itemId" }, { itemId: "v1|222|0" } ]
     }.to_json
-    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=100")
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=200")
       .to_return(status: 200, body: search_body)
 
     detail_222 = { itemId: "v1|222|0", title: "Dell R730xd #2", price: { value: "200.00", currency: "USD" },

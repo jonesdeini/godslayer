@@ -7,14 +7,23 @@ module Ebay
     end
 
     def keyword(phrase, exclude_phrase: nil)
-      get "#{base_url}/item_summary/search?#{query_string phrase, exclude_phrase}"
+      url = "#{base_url}/item_summary/search?#{query_string phrase, exclude_phrase}"
+      summaries = []
+
+      while url
+        page = JSON.parse get(url)
+        summaries.concat page.fetch("itemSummaries", [])
+        url = page["next"]
+      end
+
+      summaries
     end
 
     private
 
     def query_string(phrase, exclude_phrase)
       q = exclude_phrase.present? ? %(#{phrase} -"#{exclude_phrase}") : phrase
-      params = { q:, sort: "newlyListed", limit: 100 }
+      params = { q:, sort: "newlyListed", limit: 200 }
       params[:filter] = price_filter if price_cap_cents.positive?
       URI.encode_www_form params
     end
