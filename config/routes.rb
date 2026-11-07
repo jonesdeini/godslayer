@@ -20,5 +20,6 @@ Rails.application.routes.draw do
     resources :listings, only: [ :show ] do
       resources :determinations, only: [ :create ]
     end
+    resources :listing_labels, only: [ :index ]
   end
 end
