@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install dependencies
         run: uv sync --locked
@@ -101,7 +101,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install dependencies
         run: uv sync --locked
@@ -123,7 +123,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install --no-install-recommends -y tesseract-ocr
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install dependencies
         run: uv sync --locked
