@@ -39,6 +39,10 @@
 # ml/'s real secrets/local overrides, same reason as the root /.env above.
 /ml/.env
 
+# Trained classifier artifact - a derived binary, not reviewable, and never
+# shipped (ml/training/ isn't part of the deployed image).
+/ml/training/*.joblib
+
 # Python bytecode/test cache - ml/'s .venv ignores itself via its own .gitignore.
 __pycache__/
 .pytest_cache/

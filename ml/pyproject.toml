@@ -29,6 +29,21 @@ dev = [
     "pytest>=9.2.0",
     "ruff>=0.17.3",
 ]
+# Training-only - consumer.py never imports these, and they'd otherwise bloat
+# the deployed image for nothing (Shadesmar's Docker has a fixed 20GB disk).
+# ml/Dockerfile's `uv sync --locked --no-dev` never requests this group, so
+# it stays out of production without needing any Dockerfile change.
+training = [
+    "joblib>=1.5",
+    "pandas>=2.3",
+    "scikit-learn>=1.8",
+]
+
+[tool.pytest.ini_options]
+# Lets tests import ml/training/ as a plain sibling package (it's dev-only
+# tooling, not part of the installed godslayer_ml package, so it isn't on
+# sys.path any other way).
+pythonpath = ["."]
 
 [tool.ruff]
 # Matches this repo's Ruby side: rubocop-rails-omakase enforces no max

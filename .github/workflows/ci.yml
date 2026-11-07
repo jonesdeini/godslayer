@@ -104,7 +104,7 @@ jobs:
         uses: astral-sh/setup-uv@v9.0.0
 
       - name: Install dependencies
-        run: uv sync --locked
+        run: uv sync --locked --group training
 
       - name: Lint code for consistent style
         run: uv run ruff check . && uv run ruff format --check .
@@ -126,7 +126,7 @@ jobs:
         uses: astral-sh/setup-uv@v9.0.0
 
       - name: Install dependencies
-        run: uv sync --locked
+        run: uv sync --locked --group training
 
       - name: Run tests
         run: uv run pytest
