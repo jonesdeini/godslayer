@@ -5,6 +5,7 @@ class Listing < ApplicationRecord
   has_many :search_keywords, through: :listing_search_keywords
   has_many :determinations, dependent: :destroy
   has_many :listing_images, dependent: :destroy
+  has_many :listing_labels, dependent: :destroy
 
   scope :ordered_for_review, -> { order(price: :desc) }
 
@@ -62,5 +63,9 @@ class Listing < ApplicationRecord
 
   def active_determination
     determinations.find(&:active?)
+  end
+
+  def active_label
+    listing_labels.find(&:active?)
   end
 end
