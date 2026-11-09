@@ -94,12 +94,29 @@ class ListingTest < ActiveSupport::TestCase
     assert listing.changed_since_summary?(RAW.merge("condition" => "Used"))
   end
 
-  test "destroying a listing with a determination pointing at a listing_image doesn't violate the FK" do
+  test "destroying a listing removes its determinations and the images they reference" do
     listing = Listing.from_ebay_json RAW.merge("itemId" => "v1|destroy-fk-test|0")
     listing.save!
     listing_image = listing.listing_images.create! source_url: "https://images.example.com/bios.jpg"
-    listing.determinations.create!(field: "ram", verdict: "match", listing_image:)
+    determination = listing.determinations.create!(field: "ram", verdict: "match", listing_image:)
 
-    assert_nothing_raised { listing.destroy! }
+    listing.destroy!
+
+    refute Listing.exists?(listing.id)
+    refute Determination.exists?(determination.id)
+    refute ListingImage.exists?(listing_image.id)
+  end
+
+  test "destroying a listing removes both active and historical labels" do
+    listing = Listing.from_ebay_json RAW.merge("itemId" => "v1|destroy-labels-test|0")
+    listing.save!
+    historical_label = listing.listing_labels.create! label: "part", model: "test-model", active: false
+    active_label = listing.listing_labels.create! label: "computer", model: "test-model"
+
+    listing.destroy!
+
+    refute Listing.exists?(listing.id)
+    refute ListingLabel.exists?(historical_label.id)
+    refute ListingLabel.exists?(active_label.id)
   end
 end

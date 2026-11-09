@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_201604) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_07_163844) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,6 +66,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_201604) do
     t.index ["listing_id", "source_url"], name: "index_listing_images_on_listing_id_and_source_url", unique: true
   end
 
+  create_table "listing_labels", force: :cascade do |t|
+    t.bigint "listing_id", null: false
+    t.string "label", null: false
+    t.string "model", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["listing_id"], name: "index_listing_labels_on_listing_id", unique: true, where: "active"
+  end
+
   create_table "listing_search_keywords", force: :cascade do |t|
     t.bigint "listing_id", null: false
     t.bigint "search_keyword_id", null: false
@@ -116,6 +126,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_201604) do
   add_foreign_key "determinations", "listing_images"
   add_foreign_key "determinations", "listings"
   add_foreign_key "listing_images", "listings"
+  add_foreign_key "listing_labels", "listings"
   add_foreign_key "listing_search_keywords", "listings"
   add_foreign_key "listing_search_keywords", "search_keywords"
 end
