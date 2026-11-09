@@ -17,6 +17,7 @@ class ListingLabelerTest < ActiveSupport::TestCase
   end
 
   setup do
+    ENV["LLM_PROVIDER"] = "anthropic"
     ENV["ANTHROPIC_API_KEY"] = "fake-key"
   end
 
