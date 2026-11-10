@@ -22,5 +22,6 @@ Rails.application.routes.draw do
     end
     resources :listing_labels, only: [ :index ]
     resources :search_keywords, only: [ :index ]
+    resources :title_classifier_models, only: [ :create ]
   end
 end
