@@ -21,5 +21,6 @@ Rails.application.routes.draw do
       resources :determinations, only: [ :create ]
     end
     resources :listing_labels, only: [ :index ]
+    resources :title_classifier_models, only: [ :create ]
   end
 end
