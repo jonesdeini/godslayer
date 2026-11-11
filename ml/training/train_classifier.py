@@ -15,21 +15,26 @@ from godslayer_ml.api_client import fetch_listing_labels, post_title_classifier_
 logger = logging.getLogger(__name__)
 
 
-def build_pipeline() -> Pipeline:
+def build_pipeline(identity_tokens: set[str] | None = None) -> Pipeline:
+    """identity_tokens are search-identity words (model numbers, brand/family
+    names) excluded from the learned vocabulary - they identify which machine
+    a result concerns, not whether it's the machine or an accessory, so
+    letting the model learn from them risks tying the verdict to which
+    search surfaced a result rather than to its actual content."""
     return Pipeline(
         [
-            ("tfidf", TfidfVectorizer()),
+            ("tfidf", TfidfVectorizer(stop_words=list(identity_tokens) if identity_tokens else None)),
             ("clf", LogisticRegression()),
         ]
     )
 
 
-def train(labels: pd.DataFrame) -> Pipeline:
+def train(labels: pd.DataFrame, identity_tokens: set[str] | None = None) -> Pipeline:
     x_train, x_test, y_train, y_test = train_test_split(
         labels["title"], labels["label"], test_size=0.2, random_state=0, stratify=labels["label"]
     )
 
-    pipeline = build_pipeline()
+    pipeline = build_pipeline(identity_tokens)
     pipeline.fit(x_train, y_train)
 
     print(classification_report(y_test, pipeline.predict(x_test)))
