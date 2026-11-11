@@ -65,17 +65,10 @@ services:
       - "3001:3000"
     volumes:
       - ./storage_data:/rails/storage
+    env_file: .env
     environment: &app_env
       PGHOST: postgres
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      EBAY_CLIENT_ID: ${EBAY_CLIENT_ID}
-      EBAY_CLIENT_SECRET: ${EBAY_CLIENT_SECRET}
-      EBAY_MARKETPLACE_ID: ${EBAY_MARKETPLACE_ID}
-      EBAY_ENVIRONMENT: ${EBAY_ENVIRONMENT}
-      PRICE_CAP_CENTS: ${PRICE_CAP_CENTS}
-      ITEM_LOCATION_COUNTRY: ${ITEM_LOCATION_COUNTRY}
-      SENTRY_DSN: ${SENTRY_DSN}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
@@ -92,6 +85,7 @@ services:
         condition: service_healthy
     volumes:
       - ./storage_data:/rails/storage
+    env_file: .env
     environment: *app_env
 
   ml:
