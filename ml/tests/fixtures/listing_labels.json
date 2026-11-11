@@ -1,0 +1,562 @@
+[
+  {
+    "listing_id": 1,
+    "ebay_item_id": "v1|fixture-1|0",
+    "title": "Dell R630 Server 2x E5-2650v4 64GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 2,
+    "ebay_item_id": "v1|fixture-2|0",
+    "title": "HP DL380 Gen9 Server 128GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 3,
+    "ebay_item_id": "v1|fixture-3|0",
+    "title": "Supermicro 2U Server Dual Xeon",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 4,
+    "ebay_item_id": "v1|fixture-4|0",
+    "title": "Lenovo Workstation Tower Xeon",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 5,
+    "ebay_item_id": "v1|fixture-5|0",
+    "title": "Dell PowerEdge R620 Server 32GB RAM 2x Xeon E5-2620",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 6,
+    "ebay_item_id": "v1|fixture-6|0",
+    "title": "Dell PowerEdge R630 Rack Server 64GB DDR4",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 7,
+    "ebay_item_id": "v1|fixture-7|0",
+    "title": "Dell PowerEdge R640 Server Xeon Silver 4110 128GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 8,
+    "ebay_item_id": "v1|fixture-8|0",
+    "title": "Dell PowerEdge R650 Server Dual Xeon Gold 256GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 9,
+    "ebay_item_id": "v1|fixture-9|0",
+    "title": "Dell PowerEdge R720 Server 2x E5-2670 64GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 10,
+    "ebay_item_id": "v1|fixture-10|0",
+    "title": "Dell PowerEdge R730 Server 128GB DDR4 8 Bay",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 11,
+    "ebay_item_id": "v1|fixture-11|0",
+    "title": "Dell PowerEdge R740 Server Xeon Gold 6130 192GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 12,
+    "ebay_item_id": "v1|fixture-12|0",
+    "title": "Dell PowerEdge R750 Rack Server 256GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 13,
+    "ebay_item_id": "v1|fixture-13|0",
+    "title": "Dell PowerEdge T330 Tower Server Xeon E3-1230 v5",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 14,
+    "ebay_item_id": "v1|fixture-14|0",
+    "title": "Dell PowerEdge T430 Server 64GB RAM No Drives",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 15,
+    "ebay_item_id": "v1|fixture-15|0",
+    "title": "Dell PowerEdge T630 Tower Server Dual Xeon 128GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 16,
+    "ebay_item_id": "v1|fixture-16|0",
+    "title": "Dell PowerEdge R430 Server 32GB RAM No OS",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 17,
+    "ebay_item_id": "v1|fixture-17|0",
+    "title": "Dell PowerEdge R530 Server 2x Xeon E5-2630 v3",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 18,
+    "ebay_item_id": "v1|fixture-18|0",
+    "title": "Dell PowerEdge R630 Server Barebones No RAM No HDD",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 19,
+    "ebay_item_id": "v1|fixture-19|0",
+    "title": "Dell PowerEdge R730 Server Chassis with Motherboard and Power Supplies",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 20,
+    "ebay_item_id": "v1|fixture-20|0",
+    "title": "Dell PowerEdge R630 Server Tested Working No Hard Drives",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 21,
+    "ebay_item_id": "v1|fixture-21|0",
+    "title": "HP ProLiant DL360 Gen8 Server 2x Xeon 32GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 22,
+    "ebay_item_id": "v1|fixture-22|0",
+    "title": "HP ProLiant DL360 Gen9 Server 64GB DDR4",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 23,
+    "ebay_item_id": "v1|fixture-23|0",
+    "title": "HPE ProLiant DL360 Gen10 Rack Server Xeon Silver",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 24,
+    "ebay_item_id": "v1|fixture-24|0",
+    "title": "HP ProLiant DL380 Gen8 Server 128GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 25,
+    "ebay_item_id": "v1|fixture-25|0",
+    "title": "HPE ProLiant DL380 Gen10 Server 2x Xeon Gold 6130",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 26,
+    "ebay_item_id": "v1|fixture-26|0",
+    "title": "HP ProLiant ML350 Gen9 Tower Server 64GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 27,
+    "ebay_item_id": "v1|fixture-27|0",
+    "title": "HP ProLiant DL380 Gen9 Server No HDD No OS",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 28,
+    "ebay_item_id": "v1|fixture-28|0",
+    "title": "Supermicro SYS-6028U Server 2U Dual Xeon 128GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 29,
+    "ebay_item_id": "v1|fixture-29|0",
+    "title": "Supermicro SYS-5019C Rack Server Xeon E-2136",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 30,
+    "ebay_item_id": "v1|fixture-30|0",
+    "title": "Supermicro 4U Server Dual Xeon E5-2680 v4 256GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 31,
+    "ebay_item_id": "v1|fixture-31|0",
+    "title": "Lenovo ThinkSystem SR630 Server Xeon Silver 64GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 32,
+    "ebay_item_id": "v1|fixture-32|0",
+    "title": "Lenovo ThinkSystem SR650 Rack Server 128GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 33,
+    "ebay_item_id": "v1|fixture-33|0",
+    "title": "Lenovo ThinkServer RD450 Server Dual Xeon 32GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 34,
+    "ebay_item_id": "v1|fixture-34|0",
+    "title": "Dell Precision T5810 Workstation Xeon E5-1650 v3 32GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 35,
+    "ebay_item_id": "v1|fixture-35|0",
+    "title": "Dell Precision T7910 Workstation Dual Xeon 64GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 36,
+    "ebay_item_id": "v1|fixture-36|0",
+    "title": "Dell Precision 5820 Tower Workstation Xeon W-2135",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 37,
+    "ebay_item_id": "v1|fixture-37|0",
+    "title": "HP Z440 Workstation Xeon E5-1620 v4 32GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 38,
+    "ebay_item_id": "v1|fixture-38|0",
+    "title": "HP Z640 Workstation Dual Xeon 64GB RAM",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 39,
+    "ebay_item_id": "v1|fixture-39|0",
+    "title": "HP Z840 Workstation Dual Xeon 128GB RAM No SSD",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 40,
+    "ebay_item_id": "v1|fixture-40|0",
+    "title": "Lenovo ThinkStation P520 Workstation Xeon W-2145 64GB",
+    "label": "computer",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 41,
+    "ebay_item_id": "v1|fixture-41|0",
+    "title": "Intel Xeon E5-2650 v4 CPU Only",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 42,
+    "ebay_item_id": "v1|fixture-42|0",
+    "title": "32GB DDR4 RDIMM Server Memory Stick",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 43,
+    "ebay_item_id": "v1|fixture-43|0",
+    "title": "HDD Caddy for Dell R630 3.5 inch",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 44,
+    "ebay_item_id": "v1|fixture-44|0",
+    "title": "Replacement Fan for HP DL380 Server",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 45,
+    "ebay_item_id": "v1|fixture-45|0",
+    "title": "Intel Xeon E5-2680 v4 Processor CPU Only",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 46,
+    "ebay_item_id": "v1|fixture-46|0",
+    "title": "Intel Xeon E5-2690 v3 CPU LGA2011-3",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 47,
+    "ebay_item_id": "v1|fixture-47|0",
+    "title": "Intel Xeon Silver 4110 Processor CPU Only",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 48,
+    "ebay_item_id": "v1|fixture-48|0",
+    "title": "Intel Xeon Gold 6130 Processor 16 Core CPU",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 49,
+    "ebay_item_id": "v1|fixture-49|0",
+    "title": "Intel Xeon E5-2620 v3 Matched Pair Processors",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 50,
+    "ebay_item_id": "v1|fixture-50|0",
+    "title": "Intel Xeon E3-1230 v5 CPU Processor Only",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 51,
+    "ebay_item_id": "v1|fixture-51|0",
+    "title": "Samsung 16GB DDR4 ECC RDIMM Server RAM Module",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 52,
+    "ebay_item_id": "v1|fixture-52|0",
+    "title": "Samsung 32GB DDR4 2400T ECC Registered Memory Stick",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 53,
+    "ebay_item_id": "v1|fixture-53|0",
+    "title": "SK Hynix 64GB DDR4 LRDIMM Server Memory Module",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 54,
+    "ebay_item_id": "v1|fixture-54|0",
+    "title": "Micron 8GB DDR3 ECC Registered Server RAM Stick",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 55,
+    "ebay_item_id": "v1|fixture-55|0",
+    "title": "Dell PowerEdge R630 32GB DDR4 Memory Module",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 56,
+    "ebay_item_id": "v1|fixture-56|0",
+    "title": "HP ProLiant DL380 Gen9 16GB RAM DIMM",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 57,
+    "ebay_item_id": "v1|fixture-57|0",
+    "title": "Dell PowerEdge R630 Replacement CPU Heatsink",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 58,
+    "ebay_item_id": "v1|fixture-58|0",
+    "title": "Dell PowerEdge R730 Processor Heatsink Assembly",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 59,
+    "ebay_item_id": "v1|fixture-59|0",
+    "title": "HP ProLiant DL360 Gen9 CPU Heatsink Only",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 60,
+    "ebay_item_id": "v1|fixture-60|0",
+    "title": "Dell Precision T5810 Replacement Heatsink Fan Assembly",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 61,
+    "ebay_item_id": "v1|fixture-61|0",
+    "title": "Dell PowerEdge R630 Cooling Fan Module",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 62,
+    "ebay_item_id": "v1|fixture-62|0",
+    "title": "Dell PowerEdge R640 Hot Swap Fan Replacement",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 63,
+    "ebay_item_id": "v1|fixture-63|0",
+    "title": "HP ProLiant DL380 Gen9 Cooling Fan Assembly",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 64,
+    "ebay_item_id": "v1|fixture-64|0",
+    "title": "Supermicro 2U Server Replacement Fan Module",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 65,
+    "ebay_item_id": "v1|fixture-65|0",
+    "title": "Dell PowerEdge R630 750W Hot Plug Power Supply",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 66,
+    "ebay_item_id": "v1|fixture-66|0",
+    "title": "Dell PowerEdge R730 1100W Server PSU Replacement",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 67,
+    "ebay_item_id": "v1|fixture-67|0",
+    "title": "HP ProLiant DL380 Gen9 800W Power Supply",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 68,
+    "ebay_item_id": "v1|fixture-68|0",
+    "title": "Dell PowerEdge R720 Sliding Rail Kit",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 69,
+    "ebay_item_id": "v1|fixture-69|0",
+    "title": "Dell PowerEdge R630 R730 ReadyRails Rack Rails",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 70,
+    "ebay_item_id": "v1|fixture-70|0",
+    "title": "HP ProLiant DL360 Gen9 Server Rack Rail Kit",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 71,
+    "ebay_item_id": "v1|fixture-71|0",
+    "title": "Dell PowerEdge R630 2.5 inch HDD Tray Caddy",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 72,
+    "ebay_item_id": "v1|fixture-72|0",
+    "title": "HP ProLiant DL380 Gen9 2.5 inch Drive Caddy Tray",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 73,
+    "ebay_item_id": "v1|fixture-73|0",
+    "title": "Supermicro 3.5 inch Hot Swap Drive Tray Caddy",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 74,
+    "ebay_item_id": "v1|fixture-74|0",
+    "title": "Dell PowerEdge R630 SAS Backplane Board",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 75,
+    "ebay_item_id": "v1|fixture-75|0",
+    "title": "Dell PowerEdge R730 PERC H730 RAID Controller Card",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 76,
+    "ebay_item_id": "v1|fixture-76|0",
+    "title": "Dell PowerEdge R630 Replacement Motherboard System Board",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 77,
+    "ebay_item_id": "v1|fixture-77|0",
+    "title": "HP ProLiant DL380 Gen9 System Board Motherboard Only",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 78,
+    "ebay_item_id": "v1|fixture-78|0",
+    "title": "Dell PowerEdge R630 Mini SAS Cable",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 79,
+    "ebay_item_id": "v1|fixture-79|0",
+    "title": "Dell PowerEdge R630 Front Bezel with Key",
+    "label": "part",
+    "model": "fixture-manual-label"
+  },
+  {
+    "listing_id": 80,
+    "ebay_item_id": "v1|fixture-80|0",
+    "title": "Intel X540-T2 Dual Port 10GbE Network Adapter Card",
+    "label": "part",
+    "model": "fixture-manual-label"
+  }
+]

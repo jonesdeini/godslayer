@@ -20,20 +20,16 @@ def test_fetch_listing_gets_the_listing_by_id_from_the_configured_base_url():
     assert listing == {"id": 42, "title": "A server"}
 
 
-def test_fetch_listing_labels_gets_all_labels_from_the_configured_base_url():
+def test_fetch_listing_labels_gets_all_labels_from_the_configured_base_url(listing_labels):
     response = Mock(status_code=200)
-    response.json.return_value = [
-        {"listing_id": 1, "ebay_item_id": "v1|1|0", "title": "A server", "label": "computer", "model": "claude"}
-    ]
+    response.json.return_value = listing_labels
     response.raise_for_status.return_value = None
 
     with patch("godslayer_ml.api_client.requests.get", return_value=response) as get:
         labels = fetch_listing_labels("http://api.example.com")
 
     get.assert_called_once_with("http://api.example.com/api/listing_labels", timeout=30)
-    assert labels == [
-        {"listing_id": 1, "ebay_item_id": "v1|1|0", "title": "A server", "label": "computer", "model": "claude"}
-    ]
+    assert labels == listing_labels
 
 
 def test_post_determination_posts_to_the_listings_nested_endpoint():
