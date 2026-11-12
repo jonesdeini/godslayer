@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_07_163844) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_035428) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_07_163844) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "candidate_classifications", force: :cascade do |t|
+    t.bigint "listing_candidate_id", null: false
+    t.string "verdict", null: false
+    t.decimal "confidence"
+    t.string "model_version"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["listing_candidate_id"], name: "index_candidate_classifications_on_listing_candidate_id", unique: true, where: "active"
+  end
+
+  create_table "candidate_search_keywords", force: :cascade do |t|
+    t.bigint "listing_candidate_id", null: false
+    t.bigint "search_keyword_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["listing_candidate_id", "search_keyword_id"], name: "index_candidate_search_keywords_uniqueness", unique: true
+  end
+
   create_table "determinations", force: :cascade do |t|
     t.bigint "listing_id", null: false
     t.bigint "listing_image_id"
@@ -56,6 +75,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_07_163844) do
     t.datetime "updated_at", null: false
     t.index ["listing_id", "field"], name: "index_determinations_on_listing_id_and_field", unique: true, where: "active"
     t.index ["listing_image_id"], name: "index_determinations_on_listing_image_id"
+  end
+
+  create_table "listing_candidates", force: :cascade do |t|
+    t.string "ebay_item_id", null: false
+    t.string "title", null: false
+    t.decimal "price"
+    t.string "condition"
+    t.jsonb "raw_summary", null: false
+    t.datetime "first_seen_at", null: false
+    t.datetime "last_seen_at", null: false
+    t.datetime "detail_imported_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ebay_item_id"], name: "index_listing_candidates_on_ebay_item_id", unique: true
   end
 
   create_table "listing_images", force: :cascade do |t|
@@ -121,8 +154,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_07_163844) do
     t.index ["phrase"], name: "index_search_keywords_on_phrase", unique: true
   end
 
+  create_table "title_classifier_models", force: :cascade do |t|
+    t.jsonb "vocabulary", null: false
+    t.jsonb "idf", null: false
+    t.jsonb "coef", null: false
+    t.decimal "intercept", null: false
+    t.jsonb "classes", null: false
+    t.string "version", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["version"], name: "index_title_classifier_models_on_version", unique: true
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "candidate_classifications", "listing_candidates"
+  add_foreign_key "candidate_search_keywords", "listing_candidates"
+  add_foreign_key "candidate_search_keywords", "search_keywords"
   add_foreign_key "determinations", "listing_images"
   add_foreign_key "determinations", "listings"
   add_foreign_key "listing_images", "listings"
