@@ -1,3 +1,4 @@
+import gzip
 import json
 from pathlib import Path
 
@@ -6,4 +7,5 @@ import pytest
 
 @pytest.fixture(scope="module")
 def listing_labels():
-    return json.loads((Path(__file__).parent / "fixtures" / "listing_labels.json").read_text())
+    path = Path(__file__).parent / "fixtures" / "listing_labels.json.gz"
+    return json.loads(gzip.decompress(path.read_bytes()))

@@ -1,21 +1,25 @@
 # Listing label fixtures
 
-`listing_labels.json` matches `GET /api/listing_labels`: an array of rows with
-`listing_id`, `ebay_item_id`, `title`, `label`, and `model`. It contains 40 whole
-machines and 40 standalone components/accessories, including the eight original
-training-test titles. Parts deliberately mention the same server brands and
-models as complete machines.
+`listing_labels.json.gz` and `listing_label_predictions.json.gz` match `GET
+/api/listing_labels`'s shape: gzipped JSON arrays of rows with
+`listing_id`, `ebay_item_id`, `title`, `label`, and `model`. Gzipped so the
+real titles don't render in a PR diff or show up in GitHub code search -
+not for repo size, since git already compresses stored blobs to about the
+same size gzip does.
 
-These are handwritten, synthetic listing titles with manually assigned labels,
-not an export of real eBay listings or the output of a live LLM. IDs and the
-`fixture-manual-label` model name identify fixture data. No answer words were
-added to the titles to distinguish the classes.
+Both are a real, disjoint, stratified snapshot pulled from production's
+`listing_labels` table (2026-11-12) - not handwritten or synthetic.
+`listing_labels.json.gz` holds 457 rows (382 computer / 75 part) for
+training; `listing_label_predictions.json.gz` holds 12 held out (6/6) for
+the "does it generalize to unseen titles" check, with no title overlap
+between the two. `model` is `gemini-3.1-flash-lite` throughout - the real
+labeling model, not a fixture marker. One exact duplicate title existed
+across two different production listings; the training-side copy was
+dropped so the held-out copy stays genuinely unseen instead of being
+trivially memorized.
 
-`listing_label_predictions.json` uses the same row shape for separate prediction
-examples. None of its titles appears in the training fixture. It retains the
-original server and CPU prediction examples and also checks server accessories,
-workstations, and machines without drives or an OS.
-
-These fixtures test the Rails response format, training, export, and known
-predictions. Passing them does not establish accuracy on real production data;
-evaluate that separately on representative, independently labeled listings.
+These fixtures test the Rails response format, training, export, and real
+held-out predictions - a real snapshot, not a live benchmark. The actual
+`listing_labels` table keeps growing past what's captured here; resample it
+if a new failure mode shows up that this snapshot doesn't represent, not
+on a schedule just because the table grew.

@@ -1,3 +1,4 @@
+import gzip
 import json
 from pathlib import Path
 from unittest.mock import Mock
@@ -14,14 +15,18 @@ from training.train_classifier import export_weights, train
 # for GET /api/search_keywords in tests, same role FIXTURE_IDENTITY_TOKENS
 # played before main() was wired up for real.
 SEARCH_KEYWORD_PHRASES = [
-    '(r630,"r 630") (dell,poweredge)',
+    '(dl380,"dl 380") (gen9,"gen 9",g9,"g 9")',
+    '(dl380,"dl 380") (gen10,"gen 10",g10,"g 10")',
+    '(dl360,"dl 360") (gen9,"gen 9",g9,"g 9")',
+    '(dl360,"dl 360") (gen10,"gen 10",g10,"g 10")',
+    '(ml350,"ml 350") (gen9,"gen 9",g9,"g 9")',
+    '(ml350,"ml 350") (gen10,"gen 10",g10,"g 10")',
     '(r730,"r 730") (dell,poweredge)',
-    '(r740,"r 740") (dell,poweredge)',
-    '(dl380,"dl 380") (hp,hpe,proliant)',
-    '(dl360,"dl 360") (hp,hpe,proliant)',
-    "(lenovo,thinksystem) (sr630,sr650)",
-    "dell precision t5810",
-    "supermicro",
+    '(r640,"r 640") (dell,poweredge)',
+    "(ucs,cisco) c220 m4",
+    "(ucs,cisco) c220 m5",
+    "(ucs,cisco) c240 m4",
+    "(ucs,cisco) c240 m5",
 ]
 
 FIXTURE_IDENTITY_TOKENS = extract_identity_tokens(SEARCH_KEYWORD_PHRASES)
@@ -62,7 +67,9 @@ def trained_pipeline(listing_labels):
 
 @pytest.mark.parametrize(
     "example",
-    json.loads((Path(__file__).parent / "fixtures" / "listing_label_predictions.json").read_text()),
+    json.loads(
+        gzip.decompress((Path(__file__).parent / "fixtures" / "listing_label_predictions.json.gz").read_bytes())
+    ),
     ids=lambda example: example["title"],
 )
 def test_train_distinguishes_unseen_computers_and_parts(trained_pipeline, listing_labels, example):
@@ -77,7 +84,7 @@ def test_identity_tokens_are_excluded_from_the_learned_vocabulary(trained_pipeli
     vocabulary = trained_pipeline.named_steps["tfidf"].vocabulary_
 
     assert not FIXTURE_IDENTITY_TOKENS & vocabulary.keys()
-    for descriptive_word in ["server", "workstation", "replacement", "fan", "caddy", "motherboard"]:
+    for descriptive_word in ["server", "rails", "heatsink", "fan", "caddy", "cage"]:
         assert descriptive_word in vocabulary
 
 
