@@ -10,7 +10,8 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from godslayer_ml.api_client import fetch_listing_labels, post_title_classifier_model
+from godslayer_ml.api_client import fetch_listing_labels, fetch_search_keywords, post_title_classifier_model
+from training.identity_tokens import extract_identity_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +64,9 @@ def main() -> None:
 
     api_base_url = os.environ.get("GODSLAYER_API_URL", "http://localhost:3000")
     labels = pd.DataFrame(fetch_listing_labels(api_base_url))
+    identity_tokens = extract_identity_tokens([row["phrase"] for row in fetch_search_keywords(api_base_url)])
 
-    pipeline = train(labels)
+    pipeline = train(labels, identity_tokens=identity_tokens)
     weights = export_weights(pipeline, version=str(uuid.uuid4()))
     model = post_title_classifier_model(api_base_url, **weights)
     logger.info("Posted trained model version=%s (id=%s) to %s", weights["version"], model["id"], api_base_url)
