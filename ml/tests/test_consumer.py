@@ -2,15 +2,17 @@ import json
 import signal
 from unittest.mock import Mock, patch
 
+import pika
 import requests
 
 from godslayer_ml.consumer import (
     DEAD_QUEUE_NAME,
     MAX_ATTEMPTS,
+    PREFETCH_COUNT,
+    RECONNECT_DELAY_SECONDS,
     handle_message,
     is_permanent_failure,
     run,
-    stop_consuming_on_signal,
 )
 
 
@@ -112,15 +114,6 @@ def test_is_permanent_failure_treats_5xx_and_other_exceptions_as_retryable():
     assert not is_permanent_failure(KeyError("ram_value"))
 
 
-def test_stop_consuming_on_signal_stops_the_channel_without_raising():
-    channel = Mock()
-    handler = stop_consuming_on_signal(channel)
-
-    handler(signal.SIGTERM, None)
-
-    channel.stop_consuming.assert_called_once()
-
-
 def test_run_registers_sigterm_and_sigint_to_stop_consuming_gracefully():
     connection = Mock()
     channel = Mock()
@@ -135,6 +128,86 @@ def test_run_registers_sigterm_and_sigint_to_stop_consuming_gracefully():
     registered = {call.args[0] for call in signal_signal.call_args_list}
     assert registered == {signal.SIGTERM, signal.SIGINT}
 
-    handler = signal_signal.call_args_list[0].args[1]
-    handler(signal.SIGTERM, None)
+
+def test_signal_handler_stops_the_currently_active_channel():
+    connection = Mock()
+    channel = Mock()
+    connection.channel.return_value = channel
+    captured_handlers = {}
+
+    def fake_signal(sig, handler):
+        captured_handlers[sig] = handler
+
+    def start_consuming_then_signal():
+        captured_handlers[signal.SIGTERM](signal.SIGTERM, None)
+
+    channel.start_consuming.side_effect = start_consuming_then_signal
+
+    with (
+        patch("godslayer_ml.consumer.connect", return_value=connection),
+        patch("godslayer_ml.consumer.signal.signal", side_effect=fake_signal),
+    ):
+        run("amqp://example.com", "http://api.example.com", "http://ollama.example.com")
+
     channel.stop_consuming.assert_called_once()
+
+
+def test_run_sets_a_prefetch_limit_so_a_reconnect_cannot_grab_the_whole_backlog():
+    connection = Mock()
+    channel = Mock()
+    connection.channel.return_value = channel
+
+    with (
+        patch("godslayer_ml.consumer.connect", return_value=connection),
+        patch("godslayer_ml.consumer.signal.signal"),
+    ):
+        run("amqp://example.com", "http://api.example.com", "http://ollama.example.com")
+
+    channel.basic_qos.assert_called_once_with(prefetch_count=PREFETCH_COUNT)
+
+
+def test_run_reconnects_after_losing_the_connection_to_rabbitmq():
+    connection1, channel1 = Mock(), Mock()
+    connection2, channel2 = Mock(), Mock()
+    connection1.channel.return_value = channel1
+    connection2.channel.return_value = channel2
+    channel1.start_consuming.side_effect = pika.exceptions.StreamLostError("boom")
+    channel2.start_consuming.return_value = None
+
+    with (
+        patch("godslayer_ml.consumer.connect", side_effect=[connection1, connection2]) as connect_mock,
+        patch("godslayer_ml.consumer.signal.signal"),
+        patch("godslayer_ml.consumer.time.sleep") as sleep,
+    ):
+        run("amqp://example.com", "http://api.example.com", "http://ollama.example.com")
+
+    assert connect_mock.call_count == 2
+    sleep.assert_called_once_with(RECONNECT_DELAY_SECONDS)
+    connection1.close.assert_called_once()
+    connection2.close.assert_called_once()
+
+
+def test_run_does_not_reconnect_once_a_stop_signal_has_been_received():
+    connection = Mock()
+    channel = Mock()
+    connection.channel.return_value = channel
+    captured_handlers = {}
+
+    def fake_signal(sig, handler):
+        captured_handlers[sig] = handler
+
+    def start_consuming_then_lose_connection():
+        captured_handlers[signal.SIGTERM](signal.SIGTERM, None)
+        raise pika.exceptions.AMQPConnectionError("boom")
+
+    channel.start_consuming.side_effect = start_consuming_then_lose_connection
+
+    with (
+        patch("godslayer_ml.consumer.connect", return_value=connection) as connect_mock,
+        patch("godslayer_ml.consumer.signal.signal", side_effect=fake_signal),
+        patch("godslayer_ml.consumer.time.sleep") as sleep,
+    ):
+        run("amqp://example.com", "http://api.example.com", "http://ollama.example.com")
+
+    connect_mock.assert_called_once()
+    sleep.assert_not_called()
