@@ -1,6 +1,7 @@
 import json
 import logging
 import signal
+import time
 from functools import partial
 
 import pika
@@ -14,6 +15,17 @@ DEAD_QUEUE_NAME = "listing_ready.dead"
 
 MAX_ATTEMPTS = 3
 RETRY_DELAY_SECONDS = 5
+
+# Process one message at a time instead of RabbitMQ's unbounded-prefetch
+# default - without this, a broker restart hands the consumer its entire
+# ready backlog the instant it reconnects, so "messages ready" looks like
+# it dropped to zero (really: everything just became unacked at once).
+PREFETCH_COUNT = 1
+
+# Same short-fixed-delay philosophy as RETRY_DELAY_SECONDS, kept as a
+# separate constant since it's a different concern (broker reconnect, not
+# per-listing processing retry) even though the value happens to match.
+RECONNECT_DELAY_SECONDS = 5
 
 logger = logging.getLogger(__name__)
 
@@ -53,27 +65,42 @@ def handle_message(channel, method, properties, body, api_base_url: str, ollama_
     return listing_id
 
 
-def stop_consuming_on_signal(channel):
-    def handler(signum, frame):
-        logger.info("received signal %s, finishing the in-flight message then stopping", signum)
-        channel.stop_consuming()
-
-    return handler
-
-
 def run(amqp_url: str, api_base_url: str, ollama_url: str) -> None:
-    connection = connect(amqp_url)
-    channel = connection.channel()
-    channel.queue_declare(queue=QUEUE_NAME, durable=True)
-    channel.queue_declare(queue=DEAD_QUEUE_NAME, durable=True)
-    on_message = partial(handle_message, api_base_url=api_base_url, ollama_url=ollama_url)
-    channel.basic_consume(queue=QUEUE_NAME, on_message_callback=on_message)
+    stopping = False
+    active_channel = None
 
-    handler = stop_consuming_on_signal(channel)
+    def handler(signum, frame):
+        nonlocal stopping
+        logger.info("received signal %s, finishing the in-flight message then stopping", signum)
+        stopping = True
+        if active_channel is not None:
+            active_channel.stop_consuming()
+
     signal.signal(signal.SIGTERM, handler)
     signal.signal(signal.SIGINT, handler)
 
-    try:
-        channel.start_consuming()
-    finally:
-        connection.close()
+    while True:
+        connection = connect(amqp_url)
+        try:
+            channel = connection.channel()
+            channel.basic_qos(prefetch_count=PREFETCH_COUNT)
+            channel.queue_declare(queue=QUEUE_NAME, durable=True)
+            channel.queue_declare(queue=DEAD_QUEUE_NAME, durable=True)
+            on_message = partial(handle_message, api_base_url=api_base_url, ollama_url=ollama_url)
+            channel.basic_consume(queue=QUEUE_NAME, on_message_callback=on_message)
+            active_channel = channel
+
+            channel.start_consuming()
+            return
+        except pika.exceptions.AMQPConnectionError:
+            logger.warning("lost connection to RabbitMQ, reconnecting in %ss", RECONNECT_DELAY_SECONDS, exc_info=True)
+        finally:
+            active_channel = None
+            try:
+                connection.close()
+            except pika.exceptions.AMQPError:
+                logger.debug("connection already closed while cleaning up")
+
+        if stopping:
+            return
+        time.sleep(RECONNECT_DELAY_SECONDS)
