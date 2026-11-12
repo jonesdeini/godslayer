@@ -141,7 +141,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_035428) do
     t.boolean "best_offer", default: false, null: false
     t.datetime "images_downloaded_at"
     t.datetime "published_at"
-    t.string "review_status"
     t.decimal "price"
     t.index ["ebay_item_id"], name: "index_listings_on_ebay_item_id", unique: true
   end
