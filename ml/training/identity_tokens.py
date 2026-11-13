@@ -25,5 +25,8 @@ def extract_identity_tokens(phrases: list[str]) -> set[str]:
 
 def _add_token(tokens: set[str], term: str) -> None:
     term = term.strip().strip('"').strip().lower()
-    if term and " " not in term:
-        tokens.add(term)
+    if not term or " " in term:
+        return
+    tokens.add(term)
+    if "-" in term:
+        tokens.update(part for part in term.split("-") if part)

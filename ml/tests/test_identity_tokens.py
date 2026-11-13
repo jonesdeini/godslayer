@@ -33,3 +33,9 @@ def test_merges_tokens_across_multiple_phrases():
 
 def test_returns_an_empty_set_for_no_phrases():
     assert extract_identity_tokens([]) == set()
+
+
+def test_splits_hyphenated_terms_into_the_pieces_tfidf_will_actually_tokenize():
+    tokens = extract_identity_tokens(["e5-2670"])
+
+    assert tokens == {"e5-2670", "e5", "2670"}
