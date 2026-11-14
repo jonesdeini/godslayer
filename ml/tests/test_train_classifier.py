@@ -82,6 +82,34 @@ def test_identity_tokens_are_excluded_from_the_learned_vocabulary(trained_pipeli
         assert descriptive_word in vocabulary
 
 
+def test_generalizes_to_a_model_family_held_out_of_training_entirely(listing_labels):
+    # The in-distribution holdout tests above only prove the model works on
+    # model families it already trained on. This is the harder, more
+    # realistic check: a brand-new keyword with no labels yet still needs a
+    # usable verdict from general content alone. Excludes every row an HPE
+    # ML350 Gen10 keyword matched (32 real rows, an even 16/16 split) from
+    # training entirely, then predicts on just those - this is also where a
+    # keyword-driven leak like the one Codex caught would show up most
+    # directly, since the held-out titles can't share any training rows
+    # with their own identity tokens.
+    held_out_phrase = '(ml350,"ml 350") (gen10,"gen 10",g10,"g 10")'
+    held_out = [row for row in listing_labels if held_out_phrase in row["search_keyword_phrases"]]
+    training_rows = [row for row in listing_labels if held_out_phrase not in row["search_keyword_phrases"]]
+    assert len(held_out) == 32
+
+    pipeline = train(pd.DataFrame(training_rows))
+
+    predictions = pipeline.predict([row["title"] for row in held_out])
+    correct = sum(prediction == row["label"] for prediction, row in zip(predictions, held_out))
+
+    # 23/32 (~72%) today - clearly better than the 50/50 chance a collapsed
+    # or leaking model would produce, but well below in-distribution
+    # accuracy, which is expected and worth keeping visible rather than
+    # papered over. The bar here is "meaningfully generalizes," not "matches
+    # in-distribution performance."
+    assert correct / len(held_out) >= 0.6
+
+
 def test_identity_tokens_stay_excluded_even_when_only_some_rows_matched_a_brand_keyword():
     # Codex's regression (reviewing 9027e08): per-row exclusion let "dell"/
     # "poweredge" leak through the part rows (matched via bare "r740", no
