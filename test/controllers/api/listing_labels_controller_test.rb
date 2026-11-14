@@ -31,6 +31,20 @@ class Api::ListingLabelsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Dell R630 Server", row["title"]
     assert_equal "computer", row["label"]
     assert_equal "claude-haiku-4-5-20251001", row["model"]
+    assert_equal [], row["search_keyword_phrases"]
+  end
+
+  test "includes the phrases of every search keyword that ever matched the listing, active or not" do
+    listing = create_listing "v1|label-api-test-4|0", "Dell PowerEdge R640 Server"
+    ListingLabelWriter.write listing:, label: "computer", model: "claude-haiku-4-5-20251001"
+    retired_keyword = SearchKeyword.create!(phrase: "r640", active: false)
+    active_keyword = SearchKeyword.create!(phrase: '(r640,"r 640") (dell,poweredge)', active: true)
+    listing.search_keywords << [retired_keyword, active_keyword]
+
+    get api_listing_labels_path
+
+    body = JSON.parse response.body
+    assert_equal ["r640", '(r640,"r 640") (dell,poweredge)'], body.first["search_keyword_phrases"]
   end
 
   test "only includes the active label, not a deactivated prior one" do
