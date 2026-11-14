@@ -41,8 +41,8 @@ def test_train_preserves_both_classes_when_parts_are_a_minority():
 @pytest.fixture(scope="module")
 def fixture_identity_tokens(listing_labels):
     """Union of every identity token tied to any labeled listing in the real
-    production fixture, via its own search_keyword_phrases - the per-listing
-    equivalent of what a single global stop-word list used to be."""
+    production fixture, via its own search_keyword_phrases - same
+    computation train_classifier.collect_identity_tokens does."""
     tokens: set[str] = set()
     for row in listing_labels:
         tokens |= extract_identity_tokens(row["search_keyword_phrases"])
@@ -51,9 +51,11 @@ def fixture_identity_tokens(listing_labels):
 
 @pytest.fixture(scope="module")
 def trained_pipeline(listing_labels):
-    """Matches what main() actually trains now: each listing's own title has
-    its own search_keyword_phrases' identity tokens stripped before TF-IDF,
-    via GET /api/listing_labels's search_keyword_phrases field."""
+    """Matches what main() actually trains now: identity tokens collected
+    from every labeled listing's own search_keyword_phrases (permanent, via
+    listing_search_keywords - not today's active search_keywords), applied
+    as one global stop-word list so the same word can't be excluded in some
+    titles and leak through in others."""
     return train(pd.DataFrame(listing_labels))
 
 
@@ -78,6 +80,31 @@ def test_identity_tokens_are_excluded_from_the_learned_vocabulary(trained_pipeli
     assert not fixture_identity_tokens & vocabulary.keys()
     for descriptive_word in ["server", "rails", "heatsink", "fan", "caddy", "cage"]:
         assert descriptive_word in vocabulary
+
+
+def test_identity_tokens_stay_excluded_even_when_only_some_rows_matched_a_brand_keyword():
+    # Codex's regression (reviewing 9027e08): per-row exclusion let "dell"/
+    # "poweredge" leak through the part rows (matched via bare "r740", no
+    # brand qualifier) while being stripped from the computer rows (matched
+    # via "(r640,...) (dell,poweredge)") - 100% cleaned-holdout accuracy hid
+    # that raw-title inference still called a real computer "part" (~55.5%)
+    # once "dell"/"poweredge" became part-associated vocabulary. A single
+    # global exclusion list, collected across every row rather than applied
+    # per-row, can't have this asymmetry.
+    labels = pd.DataFrame(
+        {
+            "title": ["Dell PowerEdge R640 Server"] * 40 + ["Dell PowerEdge R740 Fan"] * 40,
+            "label": ["computer"] * 40 + ["part"] * 40,
+            "search_keyword_phrases": [['(r640,"r 640") (dell,poweredge)']] * 40 + [["r740"]] * 40,
+        }
+    )
+
+    pipeline = train(labels)
+
+    vocabulary = pipeline.named_steps["tfidf"].vocabulary_
+    assert "dell" not in vocabulary
+    assert "poweredge" not in vocabulary
+    assert pipeline.predict(["Dell PowerEdge R640 Server"])[0] == "computer"
 
 
 def test_identity_token_exclusion_keeps_the_verdict_stable_across_model_identifiers(trained_pipeline):

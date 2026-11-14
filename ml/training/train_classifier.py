@@ -11,42 +11,49 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
 from godslayer_ml.api_client import fetch_listing_labels, post_title_classifier_model
-from training.identity_tokens import extract_identity_tokens, strip_identity_tokens
+from training.identity_tokens import extract_identity_tokens
 
 logger = logging.getLogger(__name__)
 
 
-def build_pipeline() -> Pipeline:
+def build_pipeline(identity_tokens: set[str] | None = None) -> Pipeline:
+    """identity_tokens are search-identity words (model numbers, brand/family
+    names) excluded from the learned vocabulary - they identify which machine
+    a result concerns, not whether it's the machine or an accessory, so
+    letting the model learn from them risks tying the verdict to which
+    search surfaced a result rather than to its actual content. Applied
+    globally, the same way to every title: TfidfVectorizer only supports one
+    fixed stop-word list for the whole corpus, and excluding a word from
+    some titles but not others (e.g. only the ones whose own matched keyword
+    happened to spell it out) lets it leak back in through the rest -
+    inconsistent across rows is just as broken as not excluding it at all."""
     return Pipeline(
         [
-            ("tfidf", TfidfVectorizer()),
+            ("tfidf", TfidfVectorizer(stop_words=list(identity_tokens) if identity_tokens else None)),
             ("clf", LogisticRegression()),
         ]
     )
 
 
-def clean_titles(labels: pd.DataFrame) -> pd.Series:
-    """Strips each listing's own search-identity words (model numbers,
-    brand/family names) out of its title before it ever reaches TF-IDF,
-    scoped to the search_keyword(s) that actually matched that listing
-    (labels["search_keyword_phrases"]) rather than to a single global list -
-    these words identify which machine a result concerns, not whether it's
-    the machine or an accessory, so letting the model learn from them risks
-    tying the verdict to which search surfaced a result rather than to its
-    actual content."""
-    return labels.apply(
-        lambda row: strip_identity_tokens(row["title"], extract_identity_tokens(row["search_keyword_phrases"])),
-        axis=1,
-    )
+def collect_identity_tokens(labels: pd.DataFrame) -> set[str]:
+    """Union of identity tokens across every search_keyword that has ever
+    matched any labeled listing (labels["search_keyword_phrases"], from each
+    listing's permanent listing_search_keywords history) - not scoped to
+    which keywords are active today, so retiring one can't silently stop
+    excluding the tokens tied to labels it already produced."""
+    tokens: set[str] = set()
+    for phrases in labels["search_keyword_phrases"]:
+        tokens |= extract_identity_tokens(phrases)
+    return tokens
 
 
 def train(labels: pd.DataFrame) -> Pipeline:
-    titles = clean_titles(labels)
+    identity_tokens = collect_identity_tokens(labels)
     x_train, x_test, y_train, y_test = train_test_split(
-        titles, labels["label"], test_size=0.2, random_state=0, stratify=labels["label"]
+        labels["title"], labels["label"], test_size=0.2, random_state=0, stratify=labels["label"]
     )
 
-    pipeline = build_pipeline()
+    pipeline = build_pipeline(identity_tokens)
     pipeline.fit(x_train, y_train)
 
     print(classification_report(y_test, pipeline.predict(x_test)))
