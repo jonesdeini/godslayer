@@ -10,32 +10,43 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from godslayer_ml.api_client import fetch_listing_labels, fetch_search_keywords, post_title_classifier_model
-from training.identity_tokens import extract_identity_tokens
+from godslayer_ml.api_client import fetch_listing_labels, post_title_classifier_model
+from training.identity_tokens import extract_identity_tokens, strip_identity_tokens
 
 logger = logging.getLogger(__name__)
 
 
-def build_pipeline(identity_tokens: set[str] | None = None) -> Pipeline:
-    """identity_tokens are search-identity words (model numbers, brand/family
-    names) excluded from the learned vocabulary - they identify which machine
-    a result concerns, not whether it's the machine or an accessory, so
-    letting the model learn from them risks tying the verdict to which
-    search surfaced a result rather than to its actual content."""
+def build_pipeline() -> Pipeline:
     return Pipeline(
         [
-            ("tfidf", TfidfVectorizer(stop_words=list(identity_tokens) if identity_tokens else None)),
+            ("tfidf", TfidfVectorizer()),
             ("clf", LogisticRegression()),
         ]
     )
 
 
-def train(labels: pd.DataFrame, identity_tokens: set[str] | None = None) -> Pipeline:
-    x_train, x_test, y_train, y_test = train_test_split(
-        labels["title"], labels["label"], test_size=0.2, random_state=0, stratify=labels["label"]
+def clean_titles(labels: pd.DataFrame) -> pd.Series:
+    """Strips each listing's own search-identity words (model numbers,
+    brand/family names) out of its title before it ever reaches TF-IDF,
+    scoped to the search_keyword(s) that actually matched that listing
+    (labels["search_keyword_phrases"]) rather than to a single global list -
+    these words identify which machine a result concerns, not whether it's
+    the machine or an accessory, so letting the model learn from them risks
+    tying the verdict to which search surfaced a result rather than to its
+    actual content."""
+    return labels.apply(
+        lambda row: strip_identity_tokens(row["title"], extract_identity_tokens(row["search_keyword_phrases"])),
+        axis=1,
     )
 
-    pipeline = build_pipeline(identity_tokens)
+
+def train(labels: pd.DataFrame) -> Pipeline:
+    titles = clean_titles(labels)
+    x_train, x_test, y_train, y_test = train_test_split(
+        titles, labels["label"], test_size=0.2, random_state=0, stratify=labels["label"]
+    )
+
+    pipeline = build_pipeline()
     pipeline.fit(x_train, y_train)
 
     print(classification_report(y_test, pipeline.predict(x_test)))
@@ -64,9 +75,8 @@ def main() -> None:
 
     api_base_url = os.environ.get("GODSLAYER_API_URL", "http://localhost:3000")
     labels = pd.DataFrame(fetch_listing_labels(api_base_url))
-    identity_tokens = extract_identity_tokens([row["phrase"] for row in fetch_search_keywords(api_base_url)])
 
-    pipeline = train(labels, identity_tokens=identity_tokens)
+    pipeline = train(labels)
     weights = export_weights(pipeline, version=str(uuid.uuid4()))
     model = post_title_classifier_model(api_base_url, **weights)
     logger.info("Posted trained model version=%s (id=%s) to %s", weights["version"], model["id"], api_base_url)

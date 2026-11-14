@@ -23,6 +23,16 @@ def extract_identity_tokens(phrases: list[str]) -> set[str]:
     return tokens
 
 
+def strip_identity_tokens(title: str, tokens: set[str]) -> str:
+    """Removes whole-word, case-insensitive occurrences of the given
+    identity tokens from a listing title, so TF-IDF never sees which
+    search phrase found this specific listing."""
+    if not tokens:
+        return title
+    pattern = re.compile(r"\b(?:" + "|".join(re.escape(token) for token in tokens) + r")\b", re.IGNORECASE)
+    return pattern.sub(" ", title)
+
+
 def _add_token(tokens: set[str], term: str) -> None:
     term = term.strip().strip('"').strip().lower()
     if not term or " " in term:

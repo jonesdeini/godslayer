@@ -3,7 +3,6 @@ from unittest.mock import Mock, patch
 from godslayer_ml.api_client import (
     fetch_listing,
     fetch_listing_labels,
-    fetch_search_keywords,
     post_determination,
     post_title_classifier_model,
 )
@@ -31,19 +30,6 @@ def test_fetch_listing_labels_gets_all_labels_from_the_configured_base_url(listi
 
     get.assert_called_once_with("http://api.example.com/api/listing_labels", timeout=30)
     assert labels == listing_labels
-
-
-def test_fetch_search_keywords_gets_all_keywords_from_the_configured_base_url():
-    keywords = [{"id": 1, "phrase": '(r630,"r 630") (dell,poweredge)'}]
-    response = Mock(status_code=200)
-    response.json.return_value = keywords
-    response.raise_for_status.return_value = None
-
-    with patch("godslayer_ml.api_client.requests.get", return_value=response) as get:
-        result = fetch_search_keywords("http://api.example.com")
-
-    get.assert_called_once_with("http://api.example.com/api/search_keywords", timeout=30)
-    assert result == keywords
 
 
 def test_post_determination_posts_to_the_listings_nested_endpoint():

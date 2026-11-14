@@ -2,7 +2,14 @@
 
 `listing_labels.json.gz` and `listing_label_predictions.json.gz` match `GET
 /api/listing_labels`'s shape: gzipped JSON arrays of rows with
-`listing_id`, `ebay_item_id`, `title`, `label`, and `model`. Gzipped so the
+`listing_id`, `ebay_item_id`, `title`, `label`, and `model`.
+`listing_labels.json.gz` also carries `search_keyword_phrases` - the
+phrases of every `search_keyword` that ever matched that listing (active
+or not, via `listing_search_keywords`), pulled from production alongside
+the rest of the row so training's per-listing identity-token exclusion
+(see `training/identity_tokens.py`) exercises real data, not a hand-picked
+stand-in list. `listing_label_predictions.json.gz` doesn't need it -
+held-out predictions run against raw, uncleaned titles. Gzipped so the
 real titles don't render in a PR diff or show up in GitHub code search -
 not for repo size, since git already compresses stored blobs to about the
 same size gzip does.
