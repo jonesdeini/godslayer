@@ -6,4 +6,5 @@ json.array! labels do |label|
   json.title label.listing.title
   json.label label.label
   json.model label.model
+  json.search_keyword_phrases label.listing.search_keywords.map(&:phrase)
 end
