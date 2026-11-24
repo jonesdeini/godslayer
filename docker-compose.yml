@@ -36,6 +36,13 @@ services:
     restart: unless-stopped
     volumes:
       - ./ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   # One-shot: waits for ollama's API, pulls the model the ml consumer
   # expects, then exits. Without this, a fresh ollama container has no
