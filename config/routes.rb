@@ -21,6 +21,5 @@ Rails.application.routes.draw do
       resources :determinations, only: [ :create ]
     end
     resources :listing_labels, only: [ :index ]
-    resources :search_keywords, only: [ :index ]
   end
 end
