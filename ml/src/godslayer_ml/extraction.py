@@ -29,7 +29,7 @@ def _generate_json(ollama_url: str, prompt: str) -> dict:
             "prompt": prompt,
             "stream": False,
             "format": "json",
-            "options": {"temperature": 0.1},
+            "options": {"temperature": 0.1, "num_ctx": 16384, "num_predict": 50},
         },
         timeout=300,
     )
