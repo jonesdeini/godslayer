@@ -3,6 +3,8 @@
 require "test_helper"
 
 class ListingLabelerTest < ActiveSupport::TestCase
+  include Sentry::TestHelper
+
   def create_listing(ebay_item_id)
     Listing.create!(
       ebay_item_id:,
@@ -17,11 +19,13 @@ class ListingLabelerTest < ActiveSupport::TestCase
   end
 
   setup do
+    setup_sentry_test
     ENV["LLM_PROVIDER"] = "anthropic"
     ENV["ANTHROPIC_API_KEY"] = "fake-key"
   end
 
   teardown do
+    teardown_sentry_test
     ENV.delete "ANTHROPIC_API_KEY"
   end
 
@@ -59,5 +63,6 @@ class ListingLabelerTest < ActiveSupport::TestCase
 
     assert_nothing_raised { ListingLabeler.label_all limit: 10 }
     assert_nil listing.reload.active_label
+    assert_equal 1, sentry_events.size
   end
 end

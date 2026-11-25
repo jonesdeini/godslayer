@@ -3,6 +3,7 @@
 require "test_helper"
 
 class KeywordSweepJobTest < ActiveJob::TestCase
+  include Sentry::TestHelper
   # Hand-built, not sklearn-trained - "server" always predicts computer, "fan" always part.
   def title_classifier_model
     TitleClassifierModel.create!(
@@ -12,10 +13,13 @@ class KeywordSweepJobTest < ActiveJob::TestCase
   end
 
   setup do
+    setup_sentry_test
     title_classifier_model
     stub_request(:post, "https://api.ebay.com/identity/v1/oauth2/token")
       .to_return(status: 200, body: { access_token: "fake-token", expires_in: 7200 }.to_json)
   end
+
+  teardown { teardown_sentry_test }
 
   test "imports and promotes items the classifier calls computer" do
     search_body = {
@@ -148,6 +152,33 @@ class KeywordSweepJobTest < ActiveJob::TestCase
     failed_candidate = ListingCandidate.find_by ebay_item_id: "v1|111|0"
     assert_equal "computer", failed_candidate.active_classification.verdict
     assert_nil failed_candidate.detail_imported_at
+  end
+
+  test "reports a swallowed non-quota failure to Sentry" do
+    search_body = { itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server" } ] }.to_json
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=200")
+      .to_return(status: 200, body: search_body)
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C111%7C0").to_return status: 500, body: "boom"
+
+    KeywordSweepJob.perform_now search_keywords(:one)
+
+    assert_equal 1, sentry_events.size
+    assert_equal [ "Ebay::Base::RequestError" ], extract_sentry_exceptions(last_sentry_event).map(&:type)
+  end
+
+  test "a quota-exceeded detail call aborts the sweep instead of being swallowed" do
+    search_body = {
+      itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server" }, { itemId: "v1|222|0", title: "HP Server" } ]
+    }.to_json
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=200")
+      .to_return(status: 200, body: search_body)
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item/v1%7C111%7C0")
+      .to_return(status: 429, body: '{"errors":[{"errorId":2001,"message":"Too many requests."}]}')
+
+    assert_raises(Ebay::Base::QuotaExceededError) { KeywordSweepJob.perform_now search_keywords(:one) }
+
+    assert_not_requested :get, "https://api.ebay.com/buy/browse/v1/item/v1%7C222%7C0"
+    assert_equal 0, Listing.count
   end
 
   test "skips a summary that's missing itemId entirely, without losing the others" do

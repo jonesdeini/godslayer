@@ -16,6 +16,7 @@ class ListingLabeler
     verdict = Llm::Client.classify_title listing.title
     ListingLabelWriter.write listing:, label: verdict, model: Llm::Client.model
   rescue StandardError => e
+    Sentry.capture_exception e
     Rails.logger.error "ListingLabeler: failed for listing #{listing.id}: #{e.class}: #{e.message}"
   end
 end
