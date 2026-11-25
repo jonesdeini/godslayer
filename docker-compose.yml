@@ -126,4 +126,16 @@ services:
       - /mnt/user/godslayerrr/godslayer:/mnt/user/godslayerrr/godslayer
     working_dir: /mnt/user/godslayerrr/godslayer
     entrypoint: sh
-    command: -c 'apk add --no-cache git >/dev/null 2>&1; git config --global --add safe.directory /mnt/user/godslayerrr/godslayer; while true; do git pull --ff-only --quiet || true; docker compose pull --quiet web jobs ml postgres rabbitmq updater && docker compose up -d web jobs ml ollama postgres rabbitmq && docker image prune -f; sleep 300; done'
+    command: -c 'apk add --no-cache git >/dev/null 2>&1; git config --global --add safe.directory /mnt/user/godslayerrr/godslayer; while true; do git pull --ff-only --quiet || true; docker compose pull --quiet web jobs ml postgres rabbitmq updater_watchdog && docker compose up -d web jobs ml ollama postgres rabbitmq updater_watchdog && docker image prune -f; sleep 300; done'
+
+  updater_watchdog:
+    image: docker:cli
+    restart: unless-stopped
+    environment:
+      COMPOSE_PROJECT_NAME: godslayer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/user/godslayerrr/godslayer:/mnt/user/godslayerrr/godslayer
+    working_dir: /mnt/user/godslayerrr/godslayer
+    entrypoint: sh
+    command: -c 'while true; do docker compose pull --quiet updater && docker compose up -d --no-deps updater; sleep 300; done'
