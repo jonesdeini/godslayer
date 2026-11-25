@@ -45,4 +45,19 @@ class Ebay::BaseTest < ActiveSupport::TestCase
   ensure
     Rails.application.config.x.ebay.environment = "production"
   end
+
+  test "raises QuotaExceededError on a 429" do
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/ping")
+      .to_return(status: 429, body: '{"errors":[{"errorId":2001,"message":"Too many requests."}]}')
+
+    assert_raises(Ebay::Base::QuotaExceededError) { FakeEndpoint.new.ping }
+  end
+
+  test "raises RequestError, not QuotaExceededError, on a non-429 failure" do
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/ping")
+      .to_return(status: 500, body: "boom")
+
+    error = assert_raises(Ebay::Base::RequestError) { FakeEndpoint.new.ping }
+    assert_not_instance_of Ebay::Base::QuotaExceededError, error
+  end
 end

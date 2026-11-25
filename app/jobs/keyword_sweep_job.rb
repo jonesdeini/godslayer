@@ -25,7 +25,10 @@ class KeywordSweepJob < ApplicationJob
     CandidateSearchKeyword.find_or_create_by(listing_candidate_id: candidate.id, search_keyword_id:)
 
     classify_and_promote candidate if needs_classification
+  rescue Ebay::Base::QuotaExceededError
+    raise
   rescue StandardError => e
+    Sentry.capture_exception e
     Rails.logger.error "KeywordSweepJob: failed to import #{summary.inspect}: #{e.class}: #{e.message}"
   end
 
