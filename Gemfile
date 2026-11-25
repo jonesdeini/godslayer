@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 gem "bootsnap", require: false
-gem "bunny", "~> 3.5"
+gem "bunny", "~> 3.6"
 gem "dotenv-rails"
 gem "http"
 gem "importmap-rails"
