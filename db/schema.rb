@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_035428) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_021828) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -85,10 +85,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_035428) do
     t.jsonb "raw_summary", null: false
     t.datetime "first_seen_at", null: false
     t.datetime "last_seen_at", null: false
-    t.datetime "detail_imported_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "listing_id"
     t.index ["ebay_item_id"], name: "index_listing_candidates_on_ebay_item_id", unique: true
+    t.index ["listing_id"], name: "index_listing_candidates_on_listing_id"
   end
 
   create_table "listing_images", force: :cascade do |t|
@@ -141,6 +142,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_035428) do
     t.boolean "best_offer", default: false, null: false
     t.datetime "images_downloaded_at"
     t.datetime "published_at"
+    t.string "review_status"
     t.decimal "price"
     t.index ["ebay_item_id"], name: "index_listings_on_ebay_item_id", unique: true
   end
@@ -174,6 +176,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_035428) do
   add_foreign_key "candidate_search_keywords", "search_keywords"
   add_foreign_key "determinations", "listing_images"
   add_foreign_key "determinations", "listings"
+  add_foreign_key "listing_candidates", "listings"
   add_foreign_key "listing_images", "listings"
   add_foreign_key "listing_labels", "listings"
   add_foreign_key "listing_search_keywords", "listings"

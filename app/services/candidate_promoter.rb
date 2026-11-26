@@ -8,7 +8,7 @@ class CandidatePromoter
   def promote(candidate)
     listing_id = ListingImporter.import Ebay::Item.detail(candidate.ebay_item_id)
     carry_forward_keywords candidate, listing_id
-    candidate.update! detail_imported_at: Time.current
+    candidate.update! listing_id:
   end
 
   private

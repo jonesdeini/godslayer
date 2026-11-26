@@ -6,7 +6,6 @@ class KeywordSweeperTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
   include Sentry::TestHelper
 
-  # Hand-built, not sklearn-trained - "server" always predicts computer, "fan" always part.
   def title_classifier_model
     TitleClassifierModel.create!(
       vocabulary: { "server" => 0, "fan" => 1 }, idf: [ 1.0, 1.0 ], coef: [ -10.0, 10.0 ],
@@ -35,7 +34,7 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     assert_equal 2, ListingCandidate.count
     candidate_111 = ListingCandidate.find_by ebay_item_id: "v1|111|0"
     assert_equal "computer", candidate_111.active_classification.verdict
-    assert_nil candidate_111.detail_imported_at
+    assert_nil candidate_111.listing_id
     assert_equal [ search_keywords(:one) ], candidate_111.search_keywords
     assert_enqueued_with job: PromoteCandidateJob, args: [ candidate_111 ]
     assert_enqueued_with job: PromoteCandidateJob, args: [ ListingCandidate.find_by(ebay_item_id: "v1|222|0") ]
@@ -50,8 +49,9 @@ class KeywordSweeperTest < ActiveSupport::TestCase
 
     assert_equal 1, ListingCandidate.count
     assert_no_enqueued_jobs only: PromoteCandidateJob
-    assert_equal "part", ListingCandidate.find_by(ebay_item_id: "v1|333|0").active_classification.verdict
-    assert ListingCandidate.find_by(ebay_item_id: "v1|333|0").detail_imported_at.present?
+    candidate = ListingCandidate.find_by ebay_item_id: "v1|333|0"
+    assert_equal "part", candidate.active_classification.verdict
+    assert_nil candidate.listing_id
   end
 
   test "passes the keyword's exclude phrase through to the search" do
@@ -63,10 +63,9 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     assert_equal 0, ListingCandidate.count
   end
 
-  test "skips reclassification entirely for an unchanged, already-finished candidate" do
+  test "skips reclassification entirely for an unchanged candidate" do
     ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Test Gadget", price: BigDecimal("100.00"),
-      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
-      detail_imported_at: Time.current)
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
 
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "100.00", currency: "USD" },
@@ -82,10 +81,10 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     assert_equal 1, ListingCandidate.count
   end
 
-  test "enqueues promotion again for a candidate that was never finished, even if unchanged" do
-    ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
-      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
-      detail_imported_at: nil)
+  test "enqueues promotion again for a computer-verdict candidate that was never promoted, even if unchanged" do
+    candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+    CandidateClassification.create! listing_candidate_id: candidate.id, verdict: "computer", model_version: "test"
 
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "100.00", currency: "USD" },
@@ -96,13 +95,13 @@ class KeywordSweeperTest < ActiveSupport::TestCase
 
     KeywordSweeper.sweep search_keywords(:generic)
 
-    assert_enqueued_with job: PromoteCandidateJob, args: [ ListingCandidate.find_by(ebay_item_id: "v1|111|0") ]
+    assert_enqueued_with job: PromoteCandidateJob, args: [ candidate ]
+    assert_equal 1, CandidateClassification.count
   end
 
   test "enqueues promotion again for a known candidate whose price has changed" do
     ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
-      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
-      detail_imported_at: Time.current)
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
 
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "80.00", currency: "USD" },
@@ -118,11 +117,8 @@ class KeywordSweeperTest < ActiveSupport::TestCase
 
   test "reports a swallowed non-quota failure to Sentry" do
     ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
-      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
-      detail_imported_at: Time.current)
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
 
-    # A malformed price from eBay's own API is a real failure mode: changed_since_summary?
-    # calls BigDecimal(...) on it with no rescue, raising before classification ever runs.
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "not-a-number" },
                          condition: "Used" } ]

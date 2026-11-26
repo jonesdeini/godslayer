@@ -16,13 +16,17 @@ class KeywordSweeper
   def import_item(summary, search_keyword_id)
     item_id = summary.fetch "itemId"
     existing = ListingCandidate.find_by ebay_item_id: item_id
-    needs_classification = existing.nil? || existing.changed_since_summary?(summary) || existing.detail_imported_at.nil?
+    needs_classification = existing.nil? || existing.changed_since_summary?(summary)
 
     candidate = ListingCandidate.from_ebay_summary summary
     candidate.save!
     CandidateSearchKeyword.find_or_create_by(listing_candidate_id: candidate.id, search_keyword_id:)
 
-    classify candidate if needs_classification
+    if needs_classification
+      classify candidate
+    elsif candidate.active_classification&.verdict == "computer" && candidate.listing_id.nil?
+      PromoteCandidateJob.perform_later candidate
+    end
   rescue Ebay::Base::QuotaExceededError
     raise
   rescue StandardError => e
@@ -30,20 +34,10 @@ class KeywordSweeper
     Rails.logger.error "KeywordSweeper: failed to import #{summary.inspect}: #{e.class}: #{e.message}"
   end
 
-  # A "part" verdict needs no detail call, so it's finished the instant
-  # classification runs. A "computer" verdict isn't finished until
-  # PromoteCandidateJob actually completes the detail call - stamping
-  # detail_imported_at here, before that job even runs, would make this
-  # candidate look done and stop it from ever being retried if promotion
-  # fails.
   def classify(candidate)
     verdict, confidence = TitleClassifier.classify candidate.title
     CandidateClassificationWriter.write candidate:, verdict:, confidence:, model_version: TitleClassifier.version
 
-    if verdict == "computer"
-      PromoteCandidateJob.perform_later candidate
-    else
-      candidate.update! detail_imported_at: Time.current
-    end
+    PromoteCandidateJob.perform_later candidate if verdict == "computer"
   end
 end

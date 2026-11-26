@@ -12,9 +12,6 @@ class KeywordSweepJobTest < ActiveJob::TestCase
       .to_return(status: 200, body: { access_token: "fake-token", expires_in: 7200 }.to_json)
   end
 
-  # Full behavior coverage (classification, dedup, error handling) lives in
-  # test/services/keyword_sweeper_test.rb, where it's much easier to test -
-  # this just confirms the job actually delegates.
   test "delegates to KeywordSweeper" do
     search_body = { itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server" } ] }.to_json
     stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=R730xd&sort=newlyListed&limit=200")

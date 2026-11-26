@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class ListingCandidate < ApplicationRecord
+  belongs_to :listing, optional: true
   has_many :candidate_classifications, dependent: :destroy
   has_many :candidate_search_keywords, dependent: :destroy
   has_many :search_keywords, through: :candidate_search_keywords
