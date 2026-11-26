@@ -63,9 +63,13 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     assert_equal 0, ListingCandidate.count
   end
 
-  test "skips reclassification entirely for an unchanged candidate" do
-    ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Test Gadget", price: BigDecimal("100.00"),
-      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+  test "skips reclassification and promotion for an unchanged, already-classified, already-promoted candidate" do
+    listing = Listing.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current, raw: {})
+    candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Test Gadget", price: BigDecimal("100.00"),
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
+      listing_id: listing.id)
+    CandidateClassification.create! listing_candidate_id: candidate.id, verdict: "computer", model_version: "test"
 
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "100.00", currency: "USD" },
@@ -77,8 +81,26 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     KeywordSweeper.sweep search_keywords(:generic)
 
     assert_no_enqueued_jobs only: PromoteCandidateJob
-    assert_equal 0, CandidateClassification.count
+    assert_equal 1, CandidateClassification.count
     assert_equal 1, ListingCandidate.count
+  end
+
+  test "retries classification for a candidate that exists but was never successfully classified" do
+    ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+
+    search_body = {
+      itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "100.00", currency: "USD" },
+                         condition: "Used" } ]
+    }.to_json
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Gadget&sort=newlyListed&limit=200")
+      .to_return(status: 200, body: search_body)
+
+    KeywordSweeper.sweep search_keywords(:generic)
+
+    candidate = ListingCandidate.find_by ebay_item_id: "v1|111|0"
+    assert_equal "computer", candidate.active_classification.verdict
+    assert_enqueued_with job: PromoteCandidateJob, args: [ candidate ]
   end
 
   test "enqueues promotion again for a computer-verdict candidate that was never promoted, even if unchanged" do
@@ -100,8 +122,9 @@ class KeywordSweeperTest < ActiveSupport::TestCase
   end
 
   test "enqueues promotion again for a known candidate whose price has changed" do
-    ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+    candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
       condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+    CandidateClassification.create! listing_candidate_id: candidate.id, verdict: "computer", model_version: "test"
 
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "80.00", currency: "USD" },
@@ -113,11 +136,34 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     KeywordSweeper.sweep search_keywords(:generic)
 
     assert_enqueued_with job: PromoteCandidateJob, args: [ ListingCandidate.find_by(ebay_item_id: "v1|111|0") ]
+    assert_equal 1, CandidateClassification.count
+  end
+
+  test "a part verdict never gets promoted, even if its price changes" do
+    candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Replacement Fan", price: BigDecimal("100.00"),
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+    CandidateClassification.create! listing_candidate_id: candidate.id, verdict: "part", model_version: "test"
+
+    search_body = {
+      itemSummaries: [ { itemId: "v1|111|0", title: "Replacement Fan", price: { value: "80.00", currency: "USD" },
+                         condition: "Used" } ]
+    }.to_json
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Gadget&sort=newlyListed&limit=200")
+      .to_return(status: 200, body: search_body)
+
+    KeywordSweeper.sweep search_keywords(:generic)
+
+    assert_no_enqueued_jobs only: PromoteCandidateJob
+    assert_equal 1, CandidateClassification.count
   end
 
   test "reports a swallowed non-quota failure to Sentry" do
-    ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
-      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+    listing = Listing.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current, raw: {})
+    candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
+      listing_id: listing.id)
+    CandidateClassification.create! listing_candidate_id: candidate.id, verdict: "computer", model_version: "test"
 
     search_body = {
       itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "not-a-number" },
