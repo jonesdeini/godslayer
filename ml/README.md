@@ -1,6 +1,8 @@
 # godslayer-ml
 
-The Python consumer side of godslayer. Consumes `{listing_id}` messages off RabbitMQ's `listing_ready` queue, published by the Rails app once a listing's images are downloaded, fetches the listing's data (including image URLs) from the Rails read API, downloads each image, and runs it through Tesseract OCR. See the root `CLAUDE.md` and `docs/python-consumer.md` for the full design context - no comparison/determination logic yet, this just logs what OCR finds.
+The Python consumer side of godslayer. Consumes `{listing_id}` messages off RabbitMQ's `listing_ready` queue, published by the Rails app once a listing's images are downloaded, fetches the listing's data (including image URLs) from the Rails read API, downloads each image, OCRs it with Tesseract, extracts claimed vs. photographed RAM via a local Ollama model, compares them in plain code, and posts the result to `POST /api/listings/:id/determinations`. See the root `CLAUDE.md` and `docs/python-consumer.md` for the full design context.
+
+Needs a reachable Ollama (`OLLAMA_URL`) and Rails app (`GODSLAYER_API_URL`) alongside RabbitMQ.
 
 ## Setup
 
@@ -27,9 +29,9 @@ uv run --group training pytest
 
 ## Train and upload the title classifier
 
-Deploy the Rails model-upload endpoint from PR #46 first. The target Rails app
-must expose `GET /api/listing_labels` and `POST /api/title_classifier_models`,
-and have labeled examples of both computers and parts.
+Trains against the Rails app's `GET /api/listing_labels` and uploads to
+`POST /api/title_classifier_models`, so the target app needs labeled examples of
+both computers and parts (produced by `rails listings:label`).
 
 From `ml/`, configure `GODSLAYER_API_URL` in `.env` for the intended Rails app,
 then run:
