@@ -4,6 +4,7 @@ class ListingCandidate < ApplicationRecord
   has_many :candidate_classifications, dependent: :destroy
   has_many :candidate_search_keywords, dependent: :destroy
   has_many :search_keywords, through: :candidate_search_keywords
+  has_one :active_classification, -> { where(active: true) }, class_name: "CandidateClassification"
 
   def self.from_ebay_summary(summary)
     ebay_item_id = summary.fetch "itemId"
@@ -21,9 +22,5 @@ class ListingCandidate < ApplicationRecord
 
   def changed_since_summary?(summary)
     price != BigDecimal(summary.dig("price", "value")) || condition != summary["condition"]
-  end
-
-  def active_classification
-    candidate_classifications.find(&:active?)
   end
 end

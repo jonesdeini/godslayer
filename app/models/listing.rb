@@ -6,6 +6,8 @@ class Listing < ApplicationRecord
   has_many :determinations, dependent: :destroy
   has_many :listing_images, dependent: :destroy
   has_many :listing_labels, dependent: :destroy
+  has_one :active_determination, -> { where(active: true) }, class_name: "Determination"
+  has_one :active_label, -> { where(active: true) }, class_name: "ListingLabel"
 
   scope :ordered_for_review, -> { order(price: :desc) }
 
@@ -59,13 +61,5 @@ class Listing < ApplicationRecord
     url if URI.parse(url).scheme.in? %w[http https]
   rescue URI::InvalidURIError
     nil
-  end
-
-  def active_determination
-    determinations.find(&:active?)
-  end
-
-  def active_label
-    listing_labels.find(&:active?)
   end
 end
