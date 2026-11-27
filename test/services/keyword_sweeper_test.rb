@@ -83,6 +83,7 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     assert_no_enqueued_jobs only: PromoteCandidateJob
     assert_equal 1, CandidateClassification.count
     assert_equal 1, ListingCandidate.count
+    assert_equal [ search_keywords(:generic) ], listing.reload.search_keywords
   end
 
   test "retries classification for a candidate that exists but was never successfully classified" do

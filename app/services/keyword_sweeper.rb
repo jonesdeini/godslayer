@@ -20,6 +20,7 @@ class KeywordSweeper
     candidate = ListingCandidate.from_ebay_summary summary
     candidate.save!
     CandidateSearchKeyword.find_or_create_by(listing_candidate_id: candidate.id, search_keyword_id:)
+    ListingSearchKeyword.find_or_create_by(listing_id: candidate.listing_id, search_keyword_id:) if candidate.listing_id
 
     if candidate.active_classification.nil?
       classify candidate
