@@ -65,7 +65,8 @@ class KeywordSweeperTest < ActiveSupport::TestCase
 
   test "skips reclassification and promotion for an unchanged, already-classified, already-promoted candidate" do
     listing = Listing.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
-      url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current, raw: {})
+      condition: "Used", url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current,
+      raw: {})
     candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Test Gadget", price: BigDecimal("100.00"),
       condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
       listing_id: listing.id)
@@ -122,9 +123,13 @@ class KeywordSweeperTest < ActiveSupport::TestCase
     assert_equal 1, CandidateClassification.count
   end
 
-  test "enqueues promotion again for a known candidate whose price has changed" do
+  test "enqueues promotion again for an already-promoted candidate whose price has changed" do
+    listing = Listing.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      condition: "Used", url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current,
+      raw: {})
     candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
-      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
+      listing_id: listing.id)
     CandidateClassification.create! listing_candidate_id: candidate.id, verdict: "computer", model_version: "test"
 
     search_body = {
@@ -136,8 +141,33 @@ class KeywordSweeperTest < ActiveSupport::TestCase
 
     KeywordSweeper.sweep search_keywords(:generic)
 
-    assert_enqueued_with job: PromoteCandidateJob, args: [ ListingCandidate.find_by(ebay_item_id: "v1|111|0") ]
+    assert_enqueued_with job: PromoteCandidateJob, args: [ candidate ]
     assert_equal 1, CandidateClassification.count
+  end
+
+  test "keeps detecting a stale price across sweeps until promotion actually completes" do
+    listing = Listing.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      condition: "Used", url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current,
+      raw: {})
+    candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
+      listing_id: listing.id)
+    CandidateClassification.create! listing_candidate_id: candidate.id, verdict: "computer", model_version: "test"
+
+    search_body = {
+      itemSummaries: [ { itemId: "v1|111|0", title: "Dell Server", price: { value: "80.00", currency: "USD" },
+                         condition: "Used" } ]
+    }.to_json
+    stub_request(:get, "https://api.ebay.com/buy/browse/v1/item_summary/search?q=Gadget&sort=newlyListed&limit=200")
+      .to_return(status: 200, body: search_body)
+
+    # Simulates promotion never actually completing between sweeps (a failed
+    # or still-pending PromoteCandidateJob) - the test adapter never runs
+    # enqueued jobs, so listing.price never advances past 100 either.
+    KeywordSweeper.sweep search_keywords(:generic)
+    KeywordSweeper.sweep search_keywords(:generic)
+
+    assert_enqueued_jobs 2, only: PromoteCandidateJob
   end
 
   test "a part verdict never gets promoted, even if its price changes" do
@@ -160,7 +190,8 @@ class KeywordSweeperTest < ActiveSupport::TestCase
 
   test "reports a swallowed non-quota failure to Sentry" do
     listing = Listing.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
-      url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current, raw: {})
+      condition: "Used", url: "https://ebay.com/itm/111", first_seen_at: Time.current, last_seen_at: Time.current,
+      raw: {})
     candidate = ListingCandidate.create!(ebay_item_id: "v1|111|0", title: "Dell Server", price: BigDecimal("100.00"),
       condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current,
       listing_id: listing.id)

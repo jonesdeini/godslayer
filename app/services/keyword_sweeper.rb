@@ -14,9 +14,6 @@ class KeywordSweeper
   private
 
   def import_item(summary, search_keyword_id)
-    item_id = summary.fetch "itemId"
-    existing = ListingCandidate.find_by ebay_item_id: item_id
-
     candidate = ListingCandidate.from_ebay_summary summary
     candidate.save!
     CandidateSearchKeyword.find_or_create_by(listing_candidate_id: candidate.id, search_keyword_id:)
@@ -25,7 +22,7 @@ class KeywordSweeper
     if candidate.active_classification.nil?
       classify candidate
     elsif candidate.active_classification.verdict == "computer" &&
-          (candidate.listing_id.nil? || existing.changed_since_summary?(summary))
+          (candidate.listing_id.nil? || candidate.listing.changed_since_summary?(summary))
       PromoteCandidateJob.perform_later candidate
     end
   rescue Ebay::Base::QuotaExceededError
