@@ -20,4 +20,14 @@ class PromoteCandidateJobTest < ActiveJob::TestCase
     assert candidate.reload.listing_id.present?
     assert Listing.exists?(ebay_item_id: "v1|111|0")
   end
+
+  test "limits concurrency per candidate, discarding a conflicting promotion" do
+    candidate = ListingCandidate.create!(ebay_item_id: "v1|222|0", title: "Dell Server", price: BigDecimal("50.00"),
+      condition: "Used", raw_summary: {}, first_seen_at: Time.current, last_seen_at: Time.current)
+
+    job = PromoteCandidateJob.new candidate
+
+    assert_equal "PromoteCandidateJob/ListingCandidate/#{candidate.id}", job.concurrency_key
+    assert_equal :discard, PromoteCandidateJob.concurrency_on_conflict
+  end
 end
