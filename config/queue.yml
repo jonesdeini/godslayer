@@ -19,6 +19,10 @@ default: &default
       threads: 2
       processes: 1
       polling_interval: 1
+    - queues: "candidate_promotion"
+      threads: 2
+      processes: <%= ENV.fetch("PROMOTION_JOB_CONCURRENCY", 1) %>
+      polling_interval: 1
     - queues: "publishing"
       threads: 1
       processes: 1
